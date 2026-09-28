@@ -67,6 +67,7 @@ def test_ui_boots_with_disclaimer_examples_and_input(app) -> None:
         "Expense ratio",
         "Exit load",
         "ELSS lock-in",
+        "Clear chat",
     ]
     assert len(app.chat_input) == 1
     assert any("Facts-only. No investment advice." in m.value for m in app.markdown)
@@ -149,3 +150,13 @@ def test_assistant_renders_a_resolved_follow_up_caption(monkeypatch) -> None:
     assistant = [m for m in at.chat_message if m.name == "assistant"][-1]
     caps = " ".join(c.value for c in assistant.caption)
     assert "resolved follow-up" in caps and "expense ratio" in caps
+
+
+def test_clear_chat_button_resets_history(app) -> None:
+    app.chat_input[0].set_value("What is the NAV of HDFC Large Cap Fund?").run()
+    assert not app.exception, [e.message for e in app.exception]
+    assert len(app.chat_message) == 2  # user + assistant
+
+    app.button(key="clear_chat").click().run()
+    assert not app.exception, [e.message for e in app.exception]
+    assert len(app.chat_message) == 0, "the whole conversation must vanish"

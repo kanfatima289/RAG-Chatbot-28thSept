@@ -15,6 +15,8 @@ Serves the phase-5 pipeline behind a small chat interface:
     the pipeline, and a follow-up like "what about its fees?" is rewritten
     into a standalone question before retrieval, with a "resolved follow-up"
     caption under the answer,
+  - a "Clear chat" sidebar button that resets the in-memory history (nothing
+    was ever written to disk, R9),
   - a friendly banner instead of a crash when GROQ_API_KEY is missing (C13)
     or when data/chroma/ is empty (the exact ingest command is printed).
 
@@ -138,6 +140,12 @@ def main() -> None:
             st.warning("Add `GROQ_API_KEY` to `.env` and restart to generate answers. Retrieval works without it.")
         st.link_button("Approved sources (sources.md)", "https://groww.in/mutual-funds")
         st.markdown("Answers are facts only - never investment advice. Sources are groww.in, not the official AMC.")
+        st.divider()
+        # Clear-chat: resets the in-memory session history (never written to
+        # disk, R9). Always enabled - clearing an empty chat is a safe no-op.
+        if st.button("Clear chat", key="clear_chat", use_container_width=True):
+            st.session_state["history"] = []
+            st.toast("Chat cleared.")
 
     if st.session_state.get("store_error"):
         st.error(f"The vector store could not open: {st.session_state['store_error']}")

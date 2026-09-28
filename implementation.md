@@ -401,6 +401,17 @@ Design (all implemented in `rag/memory.py` + `rag/pipeline.py`):
   standalone question - history appears ONLY in the rewrite prompt, never in
   the answer (S7).
 
+### Post-phase-6 addition — clear-chat button
+
+The chat shell gained a sidebar **Clear chat** button (`key="clear_chat"` in
+`app/streamlit_app.py`): it resets `st.session_state["history"]` and shows a
+"Chat cleared." toast, so a repeat demo run starts from a blank conversation
+without reloading the page. It is always enabled (clearing an empty chat is a
+safe no-op) - a disabled-when-empty state was tried but evaluates one run
+behind in Streamlit, because the sidebar renders before a freshly submitted
+message is appended to history. Covered by
+`tests/test_streamlit_app.py::test_clear_chat_button_resets_history`.
+
 ---
 
 ## Risk Register for Implementation
