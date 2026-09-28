@@ -24,7 +24,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DATA_DIR = PROJECT_ROOT / "data"
 CLEAN_DIR = DATA_DIR / "clean"
 RAW_DIR = DATA_DIR / "raw"
-CHUNKS_TXT = DATA_DIR / "chunks.txt"
+# Chunk review dump lives in its own folder so it can be regenerated wholesale.
+# Committed on purpose - it is deliverable "chunking rationale" (C6).
+CHUNKS_DIR = DATA_DIR / "chunks"
+CHUNKS_TXT = CHUNKS_DIR / "chunks.txt"
 
 
 # --------------------------------------------------------------------------
@@ -70,9 +73,33 @@ MIN_SCORE = float(os.getenv("MIN_SCORE", "0.25"))
 # architecture.md section 6 requires these to be chosen by inspecting the
 # real pages, then frozen here and justified in CHUNKING.md.
 # --------------------------------------------------------------------------
-CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "400"))  # words
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "80"))  # words
-MIN_SIZE = int(os.getenv("MIN_SIZE", "40"))  # merge fragments below this
+# CHUNK_SIZE  - words per chunk. Frozen by the phase 2 design gate (C6) after
+#               inspecting the real pages. See CHUNKING.md for the evidence.
+#               400 words sits under the 512-token MiniLM limit once the
+#               breadcrumb and heading path are prepended, and under the
+#               8k Groq context with room for 5 retrieved chunks.
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "400"))
+
+# CHUNK_OVERLAP - words repeated between adjacent chunks, so a fact sitting on
+#               a boundary appears whole in at least one chunk. 20% of
+#               CHUNK_SIZE.
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "80"))
+
+# MIN_SIZE - a window smaller than this is merged into its neighbour rather
+#            than indexed alone. Stops orphan fragments like a bare "Exit Load"
+#            heading body, which retrieve well but answer nothing.
+MIN_SIZE = int(os.getenv("MIN_SIZE", "60"))
+
+# PREPEND_BREADCRUMB - prefix every chunk with its full heading path and scheme
+#                      name. The key-facts strip on a fund page is a bare run of
+#                      unlabelled numbers ("226.38 0.76 6.1% 16.8%"), so without
+#                      this a retrieved chunk cannot be attributed to a fund.
+#                      Measured effect is on S2 (correct scheme) and S8.
+PREPEND_BREADCRUMB = os.getenv("PREPEND_BREADCRUMB", "1").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 if CHUNK_OVERLAP >= CHUNK_SIZE:
     raise ValueError(
