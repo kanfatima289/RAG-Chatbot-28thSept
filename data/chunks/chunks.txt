@@ -1,11 +1,11 @@
 ==============================================================================
 CHUNK DUMP - mutual fund FAQ assistant
 ==============================================================================
-Parameters   CHUNK_SIZE=400 words  CHUNK_OVERLAP=80 words  MIN_SIZE=60 words
+Parameters   CHUNK_SIZE=230 words  CHUNK_OVERLAP=80 words  MIN_SIZE=60 words
 Breadcrumb   prepended to every chunk
-Chunks       49
-Words        5,247 total, 107 mean per chunk
-Range        60 - 413 words
+Chunks       54
+Words        5,711 total, 105 mean per chunk
+Range        60 - 243 words
 Sections     80 found, 80 kept, 0 dropped
 
 Each entry shows:
@@ -16,8 +16,8 @@ Each entry shows:
 ------------------------------------------------------------------------------
 SOURCE 1  HDFC Mutual Fund
   url        https://groww.in/mutual-funds/amc/hdfc-mutual-funds
-  chunks     20
-  words      2,786
+  chunks     25
+  words      3,250
 ------------------------------------------------------------------------------
 
 [000]  Key facts
@@ -26,96 +26,121 @@ SOURCE 1  HDFC Mutual Fund
     HDFC Mutual Fund - AMC overview Key facts AUM ₹9,86,236.84Cr No of Schemes 87 AMC Age 26 years HDFC Asset Management Company Ltd., or HDFC Mutual Fund, is currently the largest mutual fund and actively managed equity mutual fund in India. It is one of the most profitable asset management companies (AMC) in the country. The company serviced more than 75000 empanelled distribution partners through 210 branches spread across more than 200 cities in India. HDFC Asset Management Company Ltd. received approval to act as an AMC from SEBI back on 30 June 2000 under the registration number MF/044/00/6. It also offers portfolio management/non-binding investment advisory services since 18 September 2016 under the registration code PM /INP000000506 from SEBI.
 
 [001]  List of HDFC Mutual Fund in India
-        chars=2,198  words=413  source=1  scheme=amc_overview
+        chars=1,304  words=243  source=1  scheme=amc_overview
 
-    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India Fund Name Category Risk NAV Expense Ratio 1Y Returns 3Y Returns 5Y Returns 7Y Returns 10Y Returns Rating Fund Size (in Cr) Exit Load HDFC Mid Cap Fund Equity Very High 226.38 0.76 6.1% 16.8% 18.3% 22.3% 17.0% 5 ₹1,08,324 Exit load of 1% if redeemed within 1 year. HDFC Silver ETF FoF Direct-Growth Commodities Very High 37.75 0.21 63.7% 44.4% -- -- -- -- ₹4,698 Exit load of 1%, if redeemed within 15 days. HDFC Flexi Cap Direct Plan-Growth Equity Very High 2,214.57 0.77 -0.3% 15.4% 16.5% 18.4% 15.5% 5 ₹1,13,606 Exit load of 1% if redeemed within 1 year HDFC Defence Fund Equity Very High 31.08 0.89 24.0% 38.5% -- -- -- -- ₹11,477 Exit load of 1%, if redeemed within 1 year. HDFC NIFTY 50 Index Fund Equity Very High 226.50 0.29 -6.3% 6.5% 6.3% 11.5% 11.1% 2 ₹23,783 Exit load of 0.25% if redeemed within 3 days HDFC Gold ETF Fund Commodities High 46.94 0.2 31.9% 35.2% 25.4% 20.7% 15.9% 3 ₹12,359 Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund Equity Very High 22.61 1.03 28.8% -- -- -- -- -- ₹3,310 Exit load of 1%, if redeemed within 30 days. HDFC Small Cap Fund Equity Very High 159.82 0.78 -1.7% 11.1% 14.6% 20.8% 17.4% 3 ₹41,890 Exit load of 1% if redeemed within 1 year HDFC Balanced Advantage Fund Hybrid Very High 557.73 0.78 -0.7% 11.0% 14.1% 15.7% 13.4% 5 ₹1,07,295 Exit Load for units in excess of 15% of the investment,1% will be charged for redemption within 1 year. HDFC Transportation and Logistics Fund Equity Very High 20.30 1.09 8.3% 25.4% -- -- -- -- ₹2,115 Exit load of 1%, if redeemed within 30 days. HDFC Multi Cap Fund Equity Very High 19.35 0.93 -2.4% 11.4% -- -- -- 2 ₹20,649 Exit load of 1% if redeemed within 1 year. HDFC NIFTY Next 50 Index Fund Equity Very High 17.00 0.35 5.6% 17.1% -- -- -- 4 ₹2,708 - HDFC BSE Sensex Index Fund Equity Very High 707.44 0.22 -8.2% 4.8% 5.2% 10.7% 10.9% 1 ₹8,495 Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund Equity Very High 261.79 0.82 -1.8% 15.2% 17.8% 18.4% 14.4% 5 ₹28,200 Exit load of 1% if redeemed within 1 year HDFC Large & Mid Cap Fund Equity Very High 359.52 0.92 0.4% 12.6% 14.0% 18.3% 14.4% 4 ₹30,294 Exit
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India Fund Name Category Risk NAV Expense Ratio 1Y Returns 3Y Returns 5Y Returns 7Y Returns 10Y Returns Rating Fund Size (in Cr) Exit Load HDFC Mid Cap Fund Equity Very High 226.38 0.76 6.1% 16.8% 18.3% 22.3% 17.0% 5 ₹1,08,324 Exit load of 1% if redeemed within 1 year. HDFC Silver ETF FoF Direct-Growth Commodities Very High 37.75 0.21 63.7% 44.4% -- -- -- -- ₹4,698 Exit load of 1%, if redeemed within 15 days. HDFC Flexi Cap Direct Plan-Growth Equity Very High 2,214.57 0.77 -0.3% 15.4% 16.5% 18.4% 15.5% 5 ₹1,13,606 Exit load of 1% if redeemed within 1 year HDFC Defence Fund Equity Very High 31.08 0.89 24.0% 38.5% -- -- -- -- ₹11,477 Exit load of 1%, if redeemed within 1 year. HDFC NIFTY 50 Index Fund Equity Very High 226.50 0.29 -6.3% 6.5% 6.3% 11.5% 11.1% 2 ₹23,783 Exit load of 0.25% if redeemed within 3 days HDFC Gold ETF Fund Commodities High 46.94 0.2 31.9% 35.2% 25.4% 20.7% 15.9% 3 ₹12,359 Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund Equity Very High 22.61 1.03 28.8% -- -- -- -- -- ₹3,310 Exit load of 1%, if redeemed within 30 days. HDFC Small Cap Fund Equity Very High 159.82 0.78 -1.7% 11.1% 14.6% 20.8% 17.4% 3 ₹41,890 Exit load of 1% if redeemed within 1 year HDFC Balanced Advantage Fund
 
 [002]  List of HDFC Mutual Fund in India
-        chars=1,851  words=413  source=1  scheme=amc_overview
+        chars=1,284  words=243  source=1  scheme=amc_overview
 
-    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India High 17.00 0.35 5.6% 17.1% -- -- -- 4 ₹2,708 - HDFC BSE Sensex Index Fund Equity Very High 707.44 0.22 -8.2% 4.8% 5.2% 10.7% 10.9% 1 ₹8,495 Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund Equity Very High 261.79 0.82 -1.8% 15.2% 17.8% 18.4% 14.4% 5 ₹28,200 Exit load of 1% if redeemed within 1 year HDFC Large & Mid Cap Fund Equity Very High 359.52 0.92 0.4% 12.6% 14.0% 18.3% 14.4% 4 ₹30,294 Exit load of 1% if redeemed within 1 year Fund Name | Category | Risk | NAV | Expense Ratio | 1Y Returns | 3Y Returns | 5Y Returns | 7Y Returns | 10Y Returns | Rating | Fund Size (in Cr) | Exit Load HDFC Mid Cap Fund | Equity | Very High | 226.38 | 0.76 | 6.1% | 16.8% | 18.3% | 22.3% | 17.0% | 5 | ₹1,08,324 | Exit load of 1% if redeemed within 1 year. HDFC Silver ETF FoF Direct-Growth | Commodities | Very High | 37.75 | 0.21 | 63.7% | 44.4% | -- | -- | -- | -- | ₹4,698 | Exit load of 1%, if redeemed within 15 days. HDFC Flexi Cap Direct Plan-Growth | Equity | Very High | 2,214.57 | 0.77 | -0.3% | 15.4% | 16.5% | 18.4% | 15.5% | 5 | ₹1,13,606 | Exit load of 1% if redeemed within 1 year HDFC Defence Fund | Equity | Very High | 31.08 | 0.89 | 24.0% | 38.5% | -- | -- | -- | -- | ₹11,477 | Exit load of 1%, if redeemed within 1 year. HDFC NIFTY 50 Index Fund | Equity | Very High | 226.50 | 0.29 | -6.3% | 6.5% | 6.3% | 11.5% | 11.1% | 2 | ₹23,783 | Exit load of 0.25% if redeemed within 3 days HDFC Gold ETF Fund | Commodities | High | 46.94 | 0.2 | 31.9% | 35.2% | 25.4% | 20.7% | 15.9% | 3 | ₹12,359 | Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund | Equity | Very High | 22.61 | 1.03 | 28.8% | -- | -- | -- | -- | -- | ₹3,310 | Exit load of 1%, if redeemed within 30 days. HDFC Small Cap Fund | Equity | Very High | 159.82 | 0.78 | -1.7%
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India days HDFC Gold ETF Fund Commodities High 46.94 0.2 31.9% 35.2% 25.4% 20.7% 15.9% 3 ₹12,359 Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund Equity Very High 22.61 1.03 28.8% -- -- -- -- -- ₹3,310 Exit load of 1%, if redeemed within 30 days. HDFC Small Cap Fund Equity Very High 159.82 0.78 -1.7% 11.1% 14.6% 20.8% 17.4% 3 ₹41,890 Exit load of 1% if redeemed within 1 year HDFC Balanced Advantage Fund Hybrid Very High 557.73 0.78 -0.7% 11.0% 14.1% 15.7% 13.4% 5 ₹1,07,295 Exit Load for units in excess of 15% of the investment,1% will be charged for redemption within 1 year. HDFC Transportation and Logistics Fund Equity Very High 20.30 1.09 8.3% 25.4% -- -- -- -- ₹2,115 Exit load of 1%, if redeemed within 30 days. HDFC Multi Cap Fund Equity Very High 19.35 0.93 -2.4% 11.4% -- -- -- 2 ₹20,649 Exit load of 1% if redeemed within 1 year. HDFC NIFTY Next 50 Index Fund Equity Very High 17.00 0.35 5.6% 17.1% -- -- -- 4 ₹2,708 - HDFC BSE Sensex Index Fund Equity Very High 707.44 0.22 -8.2% 4.8% 5.2% 10.7% 10.9% 1 ₹8,495 Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund Equity Very High 261.79 0.82 -1.8% 15.2% 17.8% 18.4% 14.4% 5 ₹28,200 Exit load of 1% if redeemed within 1
 
 [003]  List of HDFC Mutual Fund in India
-        chars=1,627  words=383  source=1  scheme=amc_overview
+        chars=1,149  words=243  source=1  scheme=amc_overview
 
-    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India 46.94 | 0.2 | 31.9% | 35.2% | 25.4% | 20.7% | 15.9% | 3 | ₹12,359 | Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund | Equity | Very High | 22.61 | 1.03 | 28.8% | -- | -- | -- | -- | -- | ₹3,310 | Exit load of 1%, if redeemed within 30 days. HDFC Small Cap Fund | Equity | Very High | 159.82 | 0.78 | -1.7% | 11.1% | 14.6% | 20.8% | 17.4% | 3 | ₹41,890 | Exit load of 1% if redeemed within 1 year HDFC Balanced Advantage Fund | Hybrid | Very High | 557.73 | 0.78 | -0.7% | 11.0% | 14.1% | 15.7% | 13.4% | 5 | ₹1,07,295 | Exit Load for units in excess of 15% of the investment,1% will be charged for redemption within 1 year. See more HDFC Transportation and Logistics Fund | Equity | Very High | 20.30 | 1.09 | 8.3% | 25.4% | -- | -- | -- | -- | ₹2,115 | Exit load of 1%, if redeemed within 30 days. HDFC Multi Cap Fund | Equity | Very High | 19.35 | 0.93 | -2.4% | 11.4% | -- | -- | -- | 2 | ₹20,649 | Exit load of 1% if redeemed within 1 year. HDFC NIFTY Next 50 Index Fund | Equity | Very High | 17.00 | 0.35 | 5.6% | 17.1% | -- | -- | -- | 4 | ₹2,708 | - HDFC BSE Sensex Index Fund | Equity | Very High | 707.44 | 0.22 | -8.2% | 4.8% | 5.2% | 10.7% | 10.9% | 1 | ₹8,495 | Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund | Equity | Very High | 261.79 | 0.82 | -1.8% | 15.2% | 17.8% | 18.4% | 14.4% | 5 | ₹28,200 | Exit load of 1% if redeemed within 1 year HDFC Large & Mid Cap Fund | Equity | Very High | 359.52 | 0.92 | 0.4% | 12.6% | 14.0% | 18.3% | 14.4% | 4 | ₹30,294 | Exit load of 1% if redeemed within 1 year
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India -- 2 ₹20,649 Exit load of 1% if redeemed within 1 year. HDFC NIFTY Next 50 Index Fund Equity Very High 17.00 0.35 5.6% 17.1% -- -- -- 4 ₹2,708 - HDFC BSE Sensex Index Fund Equity Very High 707.44 0.22 -8.2% 4.8% 5.2% 10.7% 10.9% 1 ₹8,495 Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund Equity Very High 261.79 0.82 -1.8% 15.2% 17.8% 18.4% 14.4% 5 ₹28,200 Exit load of 1% if redeemed within 1 year HDFC Large & Mid Cap Fund Equity Very High 359.52 0.92 0.4% 12.6% 14.0% 18.3% 14.4% 4 ₹30,294 Exit load of 1% if redeemed within 1 year Fund Name | Category | Risk | NAV | Expense Ratio | 1Y Returns | 3Y Returns | 5Y Returns | 7Y Returns | 10Y Returns | Rating | Fund Size (in Cr) | Exit Load HDFC Mid Cap Fund | Equity | Very High | 226.38 | 0.76 | 6.1% | 16.8% | 18.3% | 22.3% | 17.0% | 5 | ₹1,08,324 | Exit load of 1% if redeemed within 1 year. HDFC Silver ETF FoF Direct-Growth | Commodities | Very High | 37.75 | 0.21 | 63.7% | 44.4% | -- | -- | -- | -- | ₹4,698 | Exit load of 1%, if redeemed within 15 days. HDFC Flexi Cap Direct Plan-Growth | Equity | Very High |
 
-[004]  Key information about HDFC Mutual Fund
-        chars=1,734  words=257  source=1  scheme=amc_overview
+[004]  List of HDFC Mutual Fund in India
+        chars=1,058  words=243  source=1  scheme=amc_overview
 
-    HDFC Mutual Fund - AMC overview Key information about HDFC Mutual Fund Mutual fund name HDFC Mutual Fund Asset management company name HDFC Mutual Fund AMC Incorporation Date 10 Dec 1999 Sponsor name HDFC Ltd. Abrdn Investment Management Limited (AIML) erstwhile (Standard Life Investments) Trustee organisation HDFC Trustee Company Ltd Name of trustees Mr. Vimal Bhandari (Chairman) Mr. V.Srinivasa Rangan (Director) Mr. Mehernosh Kapadia (Independent Director) Mr. Dindayal Jalan (Independent Director) CIO Head – Equities: Chirag Setalvad, Head – Fixed Income: Shobhit Mehrotra MD Mr. Navneet Munot CEO Navneet Munot(Chief Executive Officer) Compliance Officer Ms. Supriya Sapre Investor Service Officer Mr. Sameer Sakseria Total AUM (as of end of last quarter) ₹9,86,236.84Cr Address "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020 Mutual fund name | HDFC Mutual Fund Asset management company name | HDFC Mutual Fund AMC Incorporation Date | 10 Dec 1999 Sponsor name | HDFC Ltd. | Abrdn Investment Management Limited (AIML) erstwhile (Standard Life Investments) Trustee organisation | HDFC Trustee Company Ltd Name of trustees | Mr. Vimal Bhandari (Chairman) | Mr. V.Srinivasa Rangan (Director) | Mr. Mehernosh Kapadia (Independent Director) | Mr. Dindayal Jalan (Independent Director) CIO | Head – Equities: Chirag Setalvad, Head – Fixed Income: Shobhit Mehrotra MD | Mr. Navneet Munot CEO | Navneet Munot(Chief Executive Officer) Compliance Officer | Ms. Supriya Sapre Investor Service Officer | Mr. Sameer Sakseria Total AUM (as of end of last quarter) | ₹9,86,236.84Cr Address | "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India | Very High | 226.38 | 0.76 | 6.1% | 16.8% | 18.3% | 22.3% | 17.0% | 5 | ₹1,08,324 | Exit load of 1% if redeemed within 1 year. HDFC Silver ETF FoF Direct-Growth | Commodities | Very High | 37.75 | 0.21 | 63.7% | 44.4% | -- | -- | -- | -- | ₹4,698 | Exit load of 1%, if redeemed within 15 days. HDFC Flexi Cap Direct Plan-Growth | Equity | Very High | 2,214.57 | 0.77 | -0.3% | 15.4% | 16.5% | 18.4% | 15.5% | 5 | ₹1,13,606 | Exit load of 1% if redeemed within 1 year HDFC Defence Fund | Equity | Very High | 31.08 | 0.89 | 24.0% | 38.5% | -- | -- | -- | -- | ₹11,477 | Exit load of 1%, if redeemed within 1 year. HDFC NIFTY 50 Index Fund | Equity | Very High | 226.50 | 0.29 | -6.3% | 6.5% | 6.3% | 11.5% | 11.1% | 2 | ₹23,783 | Exit load of 0.25% if redeemed within 3 days HDFC Gold ETF Fund | Commodities | High | 46.94 | 0.2 | 31.9% | 35.2% | 25.4% | 20.7% | 15.9% | 3 | ₹12,359 | Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund | Equity | Very High | 22.61 |
 
-[005]  How to invest in HDFC Mutual Funds?
+[005]  List of HDFC Mutual Fund in India
+        chars=1,067  words=243  source=1  scheme=amc_overview
+
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India | Very High | 226.50 | 0.29 | -6.3% | 6.5% | 6.3% | 11.5% | 11.1% | 2 | ₹23,783 | Exit load of 0.25% if redeemed within 3 days HDFC Gold ETF Fund | Commodities | High | 46.94 | 0.2 | 31.9% | 35.2% | 25.4% | 20.7% | 15.9% | 3 | ₹12,359 | Exit load of 1%, if redeemed within 15 days. HDFC Pharma And Healthcare Fund | Equity | Very High | 22.61 | 1.03 | 28.8% | -- | -- | -- | -- | -- | ₹3,310 | Exit load of 1%, if redeemed within 30 days. HDFC Small Cap Fund | Equity | Very High | 159.82 | 0.78 | -1.7% | 11.1% | 14.6% | 20.8% | 17.4% | 3 | ₹41,890 | Exit load of 1% if redeemed within 1 year HDFC Balanced Advantage Fund | Hybrid | Very High | 557.73 | 0.78 | -0.7% | 11.0% | 14.1% | 15.7% | 13.4% | 5 | ₹1,07,295 | Exit Load for units in excess of 15% of the investment,1% will be charged for redemption within 1 year. See more HDFC Transportation and Logistics Fund | Equity | Very High | 20.30 | 1.09 | 8.3% | 25.4% | -- | -- | -- | -- | ₹2,115 | Exit load of 1%, if redeemed within 30 days. HDFC
+
+[006]  List of HDFC Mutual Fund in India
+        chars=1,034  words=243  source=1  scheme=amc_overview
+
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India High | 557.73 | 0.78 | -0.7% | 11.0% | 14.1% | 15.7% | 13.4% | 5 | ₹1,07,295 | Exit Load for units in excess of 15% of the investment,1% will be charged for redemption within 1 year. See more HDFC Transportation and Logistics Fund | Equity | Very High | 20.30 | 1.09 | 8.3% | 25.4% | -- | -- | -- | -- | ₹2,115 | Exit load of 1%, if redeemed within 30 days. HDFC Multi Cap Fund | Equity | Very High | 19.35 | 0.93 | -2.4% | 11.4% | -- | -- | -- | 2 | ₹20,649 | Exit load of 1% if redeemed within 1 year. HDFC NIFTY Next 50 Index Fund | Equity | Very High | 17.00 | 0.35 | 5.6% | 17.1% | -- | -- | -- | 4 | ₹2,708 | - HDFC BSE Sensex Index Fund | Equity | Very High | 707.44 | 0.22 | -8.2% | 4.8% | 5.2% | 10.7% | 10.9% | 1 | ₹8,495 | Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund | Equity | Very High | 261.79 | 0.82 | -1.8% | 15.2% | 17.8% | 18.4% | 14.4% | 5 | ₹28,200 | Exit load of 1% if redeemed within 1 year HDFC Large & Mid Cap Fund | Equity |
+
+[007]  List of HDFC Mutual Fund in India
+        chars=524  words=123  source=1  scheme=amc_overview
+
+    HDFC Mutual Fund - AMC overview List of HDFC Mutual Fund in India Index Fund | Equity | Very High | 707.44 | 0.22 | -8.2% | 4.8% | 5.2% | 10.7% | 10.9% | 1 | ₹8,495 | Exit load of 0.25% if redeemed within 3 days HDFC Focused Fund | Equity | Very High | 261.79 | 0.82 | -1.8% | 15.2% | 17.8% | 18.4% | 14.4% | 5 | ₹28,200 | Exit load of 1% if redeemed within 1 year HDFC Large & Mid Cap Fund | Equity | Very High | 359.52 | 0.92 | 0.4% | 12.6% | 14.0% | 18.3% | 14.4% | 4 | ₹30,294 | Exit load of 1% if redeemed within 1 year
+
+[008]  Key information about HDFC Mutual Fund
+        chars=1,626  words=242  source=1  scheme=amc_overview
+
+    HDFC Mutual Fund - AMC overview Key information about HDFC Mutual Fund Mutual fund name HDFC Mutual Fund Asset management company name HDFC Mutual Fund AMC Incorporation Date 10 Dec 1999 Sponsor name HDFC Ltd. Abrdn Investment Management Limited (AIML) erstwhile (Standard Life Investments) Trustee organisation HDFC Trustee Company Ltd Name of trustees Mr. Vimal Bhandari (Chairman) Mr. V.Srinivasa Rangan (Director) Mr. Mehernosh Kapadia (Independent Director) Mr. Dindayal Jalan (Independent Director) CIO Head – Equities: Chirag Setalvad, Head – Fixed Income: Shobhit Mehrotra MD Mr. Navneet Munot CEO Navneet Munot(Chief Executive Officer) Compliance Officer Ms. Supriya Sapre Investor Service Officer Mr. Sameer Sakseria Total AUM (as of end of last quarter) ₹9,86,236.84Cr Address "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020 Mutual fund name | HDFC Mutual Fund Asset management company name | HDFC Mutual Fund AMC Incorporation Date | 10 Dec 1999 Sponsor name | HDFC Ltd. | Abrdn Investment Management Limited (AIML) erstwhile (Standard Life Investments) Trustee organisation | HDFC Trustee Company Ltd Name of trustees | Mr. Vimal Bhandari (Chairman) | Mr. V.Srinivasa Rangan (Director) | Mr. Mehernosh Kapadia (Independent Director) | Mr. Dindayal Jalan (Independent Director) CIO | Head – Equities: Chirag Setalvad, Head – Fixed Income: Shobhit Mehrotra MD | Mr. Navneet Munot CEO | Navneet Munot(Chief Executive Officer) Compliance Officer | Ms. Supriya Sapre Investor Service Officer | Mr. Sameer Sakseria Total AUM (as of end of last quarter) | ₹9,86,236.84Cr
+
+[009]  Key information about HDFC Mutual Fund
+        chars=702  words=107  source=1  scheme=amc_overview
+
+    HDFC Mutual Fund - AMC overview Key information about HDFC Mutual Fund Investments) Trustee organisation | HDFC Trustee Company Ltd Name of trustees | Mr. Vimal Bhandari (Chairman) | Mr. V.Srinivasa Rangan (Director) | Mr. Mehernosh Kapadia (Independent Director) | Mr. Dindayal Jalan (Independent Director) CIO | Head – Equities: Chirag Setalvad, Head – Fixed Income: Shobhit Mehrotra MD | Mr. Navneet Munot CEO | Navneet Munot(Chief Executive Officer) Compliance Officer | Ms. Supriya Sapre Investor Service Officer | Mr. Sameer Sakseria Total AUM (as of end of last quarter) | ₹9,86,236.84Cr Address | "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020
+
+[010]  How to invest in HDFC Mutual Funds?
         chars=896  words=160  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview How to invest in HDFC Mutual Funds? Mutual Fund investment not only provides a lot of benefits but can also help in reducing the risk by investing in diverse portfolios. If you are looking to invest in HDFC Bank Mutual funds, such an investment can be made online as well as offline. The HDFC mutual fund application via offline mode can be done by filling up an investment application form. If you prefer to do it online, the prerequisites of how can you invest in HDFC MF online is given below. The applicant should be an existing HDFC Bank account holder The applicant should be KYC Compliant The status of the Savings Bank Account needs to be Single or Either/Survivor The Account Opening Application Form needs to be signed by all the Bank Account Holders However, you can also invest in HDFC Mutual Funds online on Groww; the steps for which are given below:
 
-[006]  Let's have a closer look, HDFC Mid Cap Fund Direct Growth
+[011]  Let's have a closer look, HDFC Mid Cap Fund Direct Growth
         chars=428  words=79  source=1  scheme=amc_overview  warnings=['merged 1 small chunk(s)']
 
     HDFC Mutual Fund - AMC overview Let's have a closer look Now let us jump and check about these top 15 mutual fund schemes. HDFC Mid Cap Fund Direct Growth HDFC Mid Cap Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Mid Cap Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹1,08,324Cr 1Y Returns 6.1% Min Investment Amt | ₹100 AUM | ₹1,08,324Cr 1Y Returns | 6.1%
 
-[007]  HDFC Silver ETF FoF Direct Growth
+[012]  HDFC Silver ETF FoF Direct Growth
         chars=450  words=77  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Silver ETF FoF Direct Growth HDFC Silver ETF FoF Direct Growth Fund Performance: The HDFC Silver ETF FoF Direct-Growth comes under the Commodities category of HDFC Mutual Funds. Minimum Investment Amount: Lump sum minimum amount for HDFC Silver ETF FoF Direct-Growth is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹4,698Cr 1Y Returns 63.7% Min Investment Amt | ₹100 AUM | ₹4,698Cr 1Y Returns | 63.7%
 
-[008]  HDFC Flexi Cap Direct Plan Growth
+[013]  HDFC Flexi Cap Direct Plan Growth
         chars=359  words=62  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Flexi Cap Direct Plan Growth HDFC Flexi Cap Direct Plan Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Flexi Cap Direct Plan-Growth is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹1,13,606Cr 1Y Returns -0.3% Min Investment Amt | ₹100 AUM | ₹1,13,606Cr 1Y Returns | -0.3%
 
-[009]  HDFC Defence Fund Direct Growth
+[014]  HDFC Defence Fund Direct Growth
         chars=411  words=71  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Defence Fund Direct Growth HDFC Defence Fund Direct Growth Fund Performance: The HDFC Defence Fund comes under the Equity category of HDFC Mutual Funds. Minimum Investment Amount: Lump sum minimum amount for HDFC Defence Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹11,477Cr 1Y Returns 24.0% Min Investment Amt | ₹100 AUM | ₹11,477Cr 1Y Returns | 24.0%
 
-[010]  HDFC NIFTY 50 Index Fund Direct Growth
+[015]  HDFC NIFTY 50 Index Fund Direct Growth
         chars=356  words=64  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC NIFTY 50 Index Fund Direct Growth HDFC NIFTY 50 Index Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC NIFTY 50 Index Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹23,783Cr 1Y Returns -6.3% Min Investment Amt | ₹100 AUM | ₹23,783Cr 1Y Returns | -6.3%
 
-[011]  HDFC Gold ETF Fund of Fund Direct Plan Growth
+[016]  HDFC Gold ETF Fund of Fund Direct Plan Growth
         chars=364  words=67  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Gold ETF Fund of Fund Direct Plan Growth HDFC Gold ETF Fund of Fund Direct Plan Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Gold ETF Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹12,359Cr 1Y Returns 31.9% Min Investment Amt | ₹100 AUM | ₹12,359Cr 1Y Returns | 31.9%
 
-[012]  HDFC Pharma And Healthcare Fund Direct Growth
+[017]  HDFC Pharma And Healthcare Fund Direct Growth
         chars=465  words=79  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Pharma And Healthcare Fund Direct Growth HDFC Pharma And Healthcare Fund Direct Growth Fund Performance: The HDFC Pharma And Healthcare Fund comes under the Equity category of HDFC Mutual Funds. Minimum Investment Amount: Lump sum minimum amount for HDFC Pharma And Healthcare Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹3,310Cr 1Y Returns 28.8% Min Investment Amt | ₹100 AUM | ₹3,310Cr 1Y Returns | 28.8%
 
-[013]  HDFC Small Cap Fund Direct Growth
+[018]  HDFC Small Cap Fund Direct Growth
         chars=341  words=61  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Small Cap Fund Direct Growth HDFC Small Cap Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Small Cap Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹41,890Cr 1Y Returns -1.7% Min Investment Amt | ₹100 AUM | ₹41,890Cr 1Y Returns | -1.7%
 
-[014]  HDFC Balanced Advantage Fund Direct Growth
+[019]  HDFC Balanced Advantage Fund Direct Growth
         chars=372  words=61  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Balanced Advantage Fund Direct Growth HDFC Balanced Advantage Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Balanced Advantage Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹1,07,295Cr 1Y Returns -0.7% Min Investment Amt | ₹100 AUM | ₹1,07,295Cr 1Y Returns | -0.7%
 
-[015]  HDFC Transportation and Logistics Fund Direct Growth
+[020]  HDFC Transportation and Logistics Fund Direct Growth
         chars=491  words=79  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Transportation and Logistics Fund Direct Growth HDFC Transportation and Logistics Fund Direct Growth Fund Performance: The HDFC Transportation and Logistics Fund comes under the Equity category of HDFC Mutual Funds. Minimum Investment Amount: Lump sum minimum amount for HDFC Transportation and Logistics Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹2,115Cr 1Y Returns 8.3% Min Investment Amt | ₹100 AUM | ₹2,115Cr 1Y Returns | 8.3%
 
-[016]  HDFC Multi Cap Fund Direct Growth
+[021]  HDFC Multi Cap Fund Direct Growth
         chars=419  words=75  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC Multi Cap Fund Direct Growth HDFC Multi Cap Fund Direct Growth Fund Performance: The HDFC Multi Cap Fund comes under the Equity category of HDFC Mutual Funds. Minimum Investment Amount: Lump sum minimum amount for HDFC Multi Cap Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹20,649Cr 1Y Returns -2.4% Min Investment Amt | ₹100 AUM | ₹20,649Cr 1Y Returns | -2.4%
 
-[017]  HDFC NIFTY Next 50 Index Fund Direct Growth
+[022]  HDFC NIFTY Next 50 Index Fund Direct Growth
         chars=455  words=83  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC NIFTY Next 50 Index Fund Direct Growth HDFC NIFTY Next 50 Index Fund Direct Growth Fund Performance: The HDFC NIFTY Next 50 Index Fund comes under the Equity category of HDFC Mutual Funds. Minimum Investment Amount: Lump sum minimum amount for HDFC NIFTY Next 50 Index Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹2,708Cr 1Y Returns 5.6% Min Investment Amt | ₹100 AUM | ₹2,708Cr 1Y Returns | 5.6%
 
-[018]  HDFC BSE Sensex Index Fund Direct Growth
+[023]  HDFC BSE Sensex Index Fund Direct Growth
         chars=360  words=64  source=1  scheme=amc_overview
 
     HDFC Mutual Fund - AMC overview HDFC BSE Sensex Index Fund Direct Growth HDFC BSE Sensex Index Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC BSE Sensex Index Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹8,495Cr 1Y Returns -8.2% Min Investment Amt | ₹100 AUM | ₹8,495Cr 1Y Returns | -8.2%
 
-[019]  HDFC Focused Fund Direct Growth, HDFC Large & Mid Cap Fund Direct Growth
+[024]  HDFC Focused Fund Direct Growth, HDFC Large & Mid Cap Fund Direct Growth
         chars=661  words=119  source=1  scheme=amc_overview  warnings=['merged 1 small chunk(s)']
 
     HDFC Mutual Fund - AMC overview HDFC Focused Fund Direct Growth HDFC Focused Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Focused Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹28,200Cr 1Y Returns -1.8% Min Investment Amt | ₹100 AUM | ₹28,200Cr 1Y Returns | -1.8% HDFC Large & Mid Cap Fund Direct Growth HDFC Large & Mid Cap Fund Direct Growth Fund Performance: Minimum Investment Amount: Lump sum minimum amount for HDFC Large & Mid Cap Fund is ₹100 and for SIP, it is ₹100. Min Investment Amt ₹100 AUM ₹30,294Cr 1Y Returns 0.4% Min Investment Amt | ₹100 AUM | ₹30,294Cr 1Y Returns | 0.4%
@@ -127,37 +152,37 @@ SOURCE 2  HDFC Flexi Cap Direct Plan Growth
   words      617
 ------------------------------------------------------------------------------
 
-[020]  Key facts, Minimum investments, Expense ratio
+[025]  Key facts, Minimum investments, Expense ratio
         chars=515  words=90  source=2  scheme=flexi_cap  warnings=['merged 2 small chunk(s)']
 
     HDFC Flexi Cap Fund - Direct Growth Key facts Equity Flexi Cap Very High Risk 1M 6M 1Y 3Y 5Y All NAV: 25 Sep '26 ₹2,214.57 Min. for SIP ₹100 Fund size (AUM) ₹1,13,606.47 Cr Expense ratio 0.77% Rating 5 Minimum investments Min. for 1st investment ₹100 Min. for 2nd investment ₹100 Min. for SIP ₹100 Expense ratio A fee payable to a mutual fund house for managing your mutual fund investments. It is the total percentage of a company's fund assets used for administrative, management, advertising, and other expenses.
 
-[021]  Tax, Exit load
+[026]  Tax, Exit load
         chars=452  words=76  source=2  scheme=flexi_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Flexi Cap Fund - Direct Growth Tax A percentage of your capital gains payable to the government upon exiting your mutual fund investments. Taxation is categorized as long-term capital gains (LTCG) and short-term capital gains (STCG) depending on your holding period and the type of fund. Exit load A fee payable to a mutual fund house for exiting a fund (fully or partially) before the completion of a specified period from the date of investment.
 
-[022]  Stamp duty, Exit Load, Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020)
+[027]  Stamp duty, Exit Load, Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020)
         chars=308  words=62  source=2  scheme=flexi_cap  warnings=['merged 3 small chunk(s)']
 
     HDFC Flexi Cap Fund - Direct Growth Stamp duty A form of tax payable for the purchase or sale of an asset or security. Exit Load 01 Jan 2013 Exit load of 1% if redeemed within 1 year Exit load Exit load of 1% if redeemed within 1 year Stamp duty on investment: 0.005% (from July 1st, 2020) from July 1st 2020
 
-[023]  Tax implication, DM Dhruv Muchhal Jun 2023 - Present View details
+[028]  Tax implication, DM Dhruv Muchhal Jun 2023 - Present View details
         chars=527  words=92  source=2  scheme=flexi_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Flexi Cap Fund - Direct Growth Tax implication If you redeem within one year, returns are taxed at 20%. If you redeem after one year, returns exceeding Rs 1.25 lakh in a financial year are taxed at 12.5%. DM Dhruv Muchhal Jun 2023 - Present View details DM Dhruv Muchhal Jun 2023 - Present View details Education Mr. Dhruv has done B.Com, CA and CFA Experience Prior to joining HDFC MF,he has worked with Motilal Oswal Financial Services Ltd., Goldman Sachs, CRISIL Global Research & Analytics and Deloitte Haskins & Sells
 
-[024]  AG Amit Ganatra Feb 2026 - Present View details
+[029]  AG Amit Ganatra Feb 2026 - Present View details
         chars=426  words=73  source=2  scheme=flexi_cap
 
     HDFC Flexi Cap Fund - Direct Growth AG Amit Ganatra Feb 2026 - Present View details AG Amit Ganatra Feb 2026 - Present View details Education Mr. Ganatra holds a Commerce degree and is a Charted Accountant. He is also a Chartered Financial Analyst from AIMR. Experience Prior to joining the HDFC AMC, he has worked with Invesco Asset Management (India) Pvt. Ltd, HDFC Mutual Fund, DBS Cholamandalam AMC Pvt. Ltd. and Fidelity.
 
-[025]  About HDFC Flexi Cap Direct Plan Growth
+[030]  About HDFC Flexi Cap Direct Plan Growth
         chars=618  words=113  source=2  scheme=flexi_cap
 
     HDFC Flexi Cap Fund - Direct Growth About HDFC Flexi Cap Direct Plan Growth HDFC Flexi Cap Direct Plan Growth is a Equity Mutual Fund Scheme launched by HDFC Mutual Fund. This scheme was made available to investors on 10 Dec 1999. Dhruv Muchhal is the Current Fund Manager of HDFC Flexi Cap Direct Plan Growth fund. The fund currently has an Asset Under Management(AUM) of ₹9,86,237 Cr and the Latest NAV as of 25 Sep 2026 is ₹2,214.57. The HDFC Flexi Cap Direct Plan Growth is rated Very High risk. Minimum SIP Investment is set to ₹100. Minimum Lumpsum Investment is ₹100. Exit load of 1% if redeemed within 1 year ;
 
-[026]  Investment Objective, Fund house
+[031]  Investment Objective, Fund house
         chars=769  words=111  source=2  scheme=flexi_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Flexi Cap Fund - Direct Growth Investment Objective The scheme seeks to generate capital appreciation / income from a portfolio, predominantly invested in equity & equity related instruments. Fund benchmark NIFTY 500 Total Return Index Scheme Information Document(SID) Fund house HDFC Mutual Fund Rank (total assets) #2 in India Total AUM ₹9,86,236.84 Cr Date of Incorporation 10 Dec 1999 Phone 022 – 66316333 E-mail [email protected] Website http://www.hdfcfund.com Launch Date 10 Dec 1999 Address "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020 Custodian Deutsche Bank Registrar & Transfer Agent Cams Email [email protected] Website www.camsonline.com Address 7th Floor, Tower II, Rayala Towers, 158, Anna Salai,
@@ -169,37 +194,37 @@ SOURCE 3  HDFC Mid Cap Fund Direct Growth
   words      598
 ------------------------------------------------------------------------------
 
-[027]  Key facts, Minimum investments, Expense ratio
+[032]  Key facts, Minimum investments, Expense ratio
         chars=509  words=90  source=3  scheme=mid_cap  warnings=['merged 2 small chunk(s)']
 
     HDFC Mid Cap Fund - Direct Growth Key facts Equity Mid Cap Very High Risk 1M 6M 1Y 3Y 5Y All NAV: 25 Sep '26 ₹226.38 Min. for SIP ₹100 Fund size (AUM) ₹1,08,324.55 Cr Expense ratio 0.76% Rating 5 Minimum investments Min. for 1st investment ₹100 Min. for 2nd investment ₹100 Min. for SIP ₹100 Expense ratio A fee payable to a mutual fund house for managing your mutual fund investments. It is the total percentage of a company's fund assets used for administrative, management, advertising, and other expenses.
 
-[028]  Tax, Exit load
+[033]  Tax, Exit load
         chars=450  words=76  source=3  scheme=mid_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Mid Cap Fund - Direct Growth Tax A percentage of your capital gains payable to the government upon exiting your mutual fund investments. Taxation is categorized as long-term capital gains (LTCG) and short-term capital gains (STCG) depending on your holding period and the type of fund. Exit load A fee payable to a mutual fund house for exiting a fund (fully or partially) before the completion of a specified period from the date of investment.
 
-[029]  Stamp duty, Exit Load, Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020)
+[034]  Stamp duty, Exit Load, Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020)
         chars=308  words=62  source=3  scheme=mid_cap  warnings=['merged 3 small chunk(s)']
 
     HDFC Mid Cap Fund - Direct Growth Stamp duty A form of tax payable for the purchase or sale of an asset or security. Exit Load 01 Jan 2013 Exit load of 1% if redeemed within 1 year. Exit load Exit load of 1% if redeemed within 1 year. Stamp duty on investment: 0.005% (from July 1st, 2020) from July 1st 2020
 
-[030]  Tax implication, CS Chirag Setalvad Jan 2013 - Present View details
+[035]  Tax implication, CS Chirag Setalvad Jan 2013 - Present View details
         chars=507  words=92  source=3  scheme=mid_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Mid Cap Fund - Direct Growth Tax implication If you redeem within one year, returns are taxed at 20%. If you redeem after one year, returns exceeding Rs 1.25 lakh in a financial year are taxed at 12.5%. CS Chirag Setalvad Jan 2013 - Present View details CS Chirag Setalvad Jan 2013 - Present View details Education Mr. Setalvad is a B. Sc and MBA from University of North Carolina. Experience Prior to joining HDFC AMC he has worked with New Vernon Advisory Services Ltd., HDFC AMC and ING Barings N.V.
 
-[031]  DM Dhruv Muchhal Jun 2023 - Present View details
+[036]  DM Dhruv Muchhal Jun 2023 - Present View details
         chars=351  words=60  source=3  scheme=mid_cap
 
     HDFC Mid Cap Fund - Direct Growth DM Dhruv Muchhal Jun 2023 - Present View details DM Dhruv Muchhal Jun 2023 - Present View details Education Mr. Dhruv has done B.Com, CA and CFA Experience Prior to joining HDFC MF,he has worked with Motilal Oswal Financial Services Ltd., Goldman Sachs, CRISIL Global Research & Analytics and Deloitte Haskins & Sells
 
-[032]  About HDFC Mid Cap Fund Direct Growth
+[037]  About HDFC Mid Cap Fund Direct Growth
         chars=609  words=113  source=3  scheme=mid_cap
 
     HDFC Mid Cap Fund - Direct Growth About HDFC Mid Cap Fund Direct Growth HDFC Mid Cap Fund Direct Growth is a Equity Mutual Fund Scheme launched by HDFC Mutual Fund. This scheme was made available to investors on 10 Dec 1999. Chirag Setalvad is the Current Fund Manager of HDFC Mid Cap Fund Direct Growth fund. The fund currently has an Asset Under Management(AUM) of ₹9,86,237 Cr and the Latest NAV as of 25 Sep 2026 is ₹226.38. The HDFC Mid Cap Fund Direct Growth is rated Very High risk. Minimum SIP Investment is set to ₹100. Minimum Lumpsum Investment is ₹100. Exit load of 1% if redeemed within 1 year. ;
 
-[033]  Investment Objective, Fund house
+[038]  Investment Objective, Fund house
         chars=738  words=105  source=3  scheme=mid_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Mid Cap Fund - Direct Growth Investment Objective The scheme seeks to provide long-term capital appreciation/income by investing predominantly in Mid-Cap companies. Fund benchmark NIFTY Midcap 150 Total Return Index Scheme Information Document(SID) Fund house HDFC Mutual Fund Rank (total assets) #2 in India Total AUM ₹9,86,236.84 Cr Date of Incorporation 10 Dec 1999 Phone 022 – 66316333 E-mail [email protected] Website http://www.hdfcfund.com Launch Date 10 Dec 1999 Address "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020 Custodian -- Registrar & Transfer Agent Cams Email [email protected] Website www.camsonline.com Address 7th Floor, Tower II, Rayala Towers, 158, Anna Salai,
@@ -211,42 +236,42 @@ SOURCE 4  HDFC Large Cap Fund Direct Growth
   words      642
 ------------------------------------------------------------------------------
 
-[034]  Key facts, Minimum investments, Expense ratio
+[039]  Key facts, Minimum investments, Expense ratio
         chars=513  words=90  source=4  scheme=large_cap  warnings=['merged 2 small chunk(s)']
 
     HDFC Large Cap Fund - Direct Growth Key facts Equity Large Cap Very High Risk 1M 6M 1Y 3Y 5Y All NAV: 25 Sep '26 ₹1,189.08 Min. for SIP ₹100 Fund size (AUM) ₹39,933.37 Cr Expense ratio 1.03% Rating 4 Minimum investments Min. for 1st investment ₹100 Min. for 2nd investment ₹100 Min. for SIP ₹100 Expense ratio A fee payable to a mutual fund house for managing your mutual fund investments. It is the total percentage of a company's fund assets used for administrative, management, advertising, and other expenses.
 
-[035]  Tax, Exit load
+[040]  Tax, Exit load
         chars=452  words=76  source=4  scheme=large_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Large Cap Fund - Direct Growth Tax A percentage of your capital gains payable to the government upon exiting your mutual fund investments. Taxation is categorized as long-term capital gains (LTCG) and short-term capital gains (STCG) depending on your holding period and the type of fund. Exit load A fee payable to a mutual fund house for exiting a fund (fully or partially) before the completion of a specified period from the date of investment.
 
-[036]  Stamp duty, Exit Load
+[041]  Stamp duty, Exit Load
         chars=293  words=62  source=4  scheme=large_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Large Cap Fund - Direct Growth Stamp duty A form of tax payable for the purchase or sale of an asset or security. Exit Load 08 May 2015 Exit load of 1% if redeemed within 1 year 16 Feb 2015 Exit load of 1% if redeemed within 18 months 01 Jan 2013 Exit load of 1% if redeemed within 1 year
 
-[037]  Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020), Tax implication
+[042]  Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020), Tax implication
         chars=335  words=63  source=4  scheme=large_cap  warnings=['merged 2 small chunk(s)']
 
     HDFC Large Cap Fund - Direct Growth Exit load Exit load of 1% if redeemed within 1 year Stamp duty on investment: 0.005% (from July 1st, 2020) from July 1st 2020 Tax implication If you redeem within one year, returns are taxed at 20%. If you redeem after one year, returns exceeding Rs 1.25 lakh in a financial year are taxed at 12.5%.
 
-[038]  RB Rahul Baijal Jul 2022 - Present View details
+[043]  RB Rahul Baijal Jul 2022 - Present View details
         chars=448  words=73  source=4  scheme=large_cap
 
     HDFC Large Cap Fund - Direct Growth RB Rahul Baijal Jul 2022 - Present View details RB Rahul Baijal Jul 2022 - Present View details Education Mr. Baijal has done PGDM(MBA) from IIM Calcutta and is an engineering graduate of Delhi college of Engineering Experience Prior to joining HDFC Mutual Fund, he has worked with Sundaram Mutual Fund, Bharti AXA Life Insurance, TVF Capital, HSBC Securities, Credit Suisse Securities & Standard Chartered Bank.
 
-[039]  DM Dhruv Muchhal Jun 2023 - Present View details
+[044]  DM Dhruv Muchhal Jun 2023 - Present View details
         chars=353  words=60  source=4  scheme=large_cap
 
     HDFC Large Cap Fund - Direct Growth DM Dhruv Muchhal Jun 2023 - Present View details DM Dhruv Muchhal Jun 2023 - Present View details Education Mr. Dhruv has done B.Com, CA and CFA Experience Prior to joining HDFC MF,he has worked with Motilal Oswal Financial Services Ltd., Goldman Sachs, CRISIL Global Research & Analytics and Deloitte Haskins & Sells
 
-[040]  About HDFC Large Cap Fund Direct Growth
+[045]  About HDFC Large Cap Fund Direct Growth
         chars=617  words=113  source=4  scheme=large_cap
 
     HDFC Large Cap Fund - Direct Growth About HDFC Large Cap Fund Direct Growth HDFC Large Cap Fund Direct Growth is a Equity Mutual Fund Scheme launched by HDFC Mutual Fund. This scheme was made available to investors on 10 Dec 1999. Rahul Baijal is the Current Fund Manager of HDFC Large Cap Fund Direct Growth fund. The fund currently has an Asset Under Management(AUM) of ₹9,86,237 Cr and the Latest NAV as of 25 Sep 2026 is ₹1,189.08. The HDFC Large Cap Fund Direct Growth is rated Very High risk. Minimum SIP Investment is set to ₹100. Minimum Lumpsum Investment is ₹100. Exit load of 1% if redeemed within 1 year ;
 
-[041]  Investment Objective, Fund house
+[046]  Investment Objective, Fund house
         chars=742  words=105  source=4  scheme=large_cap  warnings=['merged 1 small chunk(s)']
 
     HDFC Large Cap Fund - Direct Growth Investment Objective The scheme seeks to provide long-term capital appreciation/income by investing predominantly in Large-Cap companies. Fund benchmark NIFTY 100 Total Return Index Scheme Information Document(SID) Fund house HDFC Mutual Fund Rank (total assets) #2 in India Total AUM ₹9,86,236.84 Cr Date of Incorporation 10 Dec 1999 Phone 022 – 66316333 E-mail [email protected] Website http://www.hdfcfund.com Launch Date 10 Dec 1999 Address "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020 Custodian HDFC Bank Registrar & Transfer Agent Cams Email [email protected] Website www.camsonline.com Address 7th Floor, Tower II, Rayala Towers, 158, Anna Salai,
@@ -258,37 +283,37 @@ SOURCE 5  HDFC ELSS Tax Saver Fund Direct Plan Growth
   words      604
 ------------------------------------------------------------------------------
 
-[042]  Key facts, Minimum investments
+[047]  Key facts, Minimum investments
         chars=313  words=60  source=5  scheme=elss  warnings=['merged 1 small chunk(s)']
 
     HDFC ELSS Tax Saver - Direct Plan Growth Key facts ELSS • 3Y Lock-in Equity ELSS Very High Risk 1M 6M 1Y 3Y 5Y All NAV: 25 Sep '26 ₹1,447.38 Min. for SIP ₹500 Fund size (AUM) ₹15,991.78 Cr Expense ratio 1.21% Rating 5 Minimum investments Min. for 1st investment ₹500 Min. for 2nd investment ₹500 Min. for SIP ₹500
 
-[043]  Expense ratio, Tax
+[048]  Expense ratio, Tax
         chars=515  words=82  source=5  scheme=elss  warnings=['merged 1 small chunk(s)']
 
     HDFC ELSS Tax Saver - Direct Plan Growth Expense ratio A fee payable to a mutual fund house for managing your mutual fund investments. It is the total percentage of a company's fund assets used for administrative, management, advertising, and other expenses. Tax A percentage of your capital gains payable to the government upon exiting your mutual fund investments. Taxation is categorized as long-term capital gains (LTCG) and short-term capital gains (STCG) depending on your holding period and the type of fund.
 
-[044]  Exit load, Stamp duty, Exit Load
+[049]  Exit load, Stamp duty, Exit Load
         chars=308  words=60  source=5  scheme=elss  warnings=['merged 2 small chunk(s)']
 
     HDFC ELSS Tax Saver - Direct Plan Growth Exit load A fee payable to a mutual fund house for exiting a fund (fully or partially) before the completion of a specified period from the date of investment. Stamp duty A form of tax payable for the purchase or sale of an asset or security. Exit Load 01 Jan 2013 --
 
-[045]  Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020), Tax implication, AK Amar Kalkundrikar Dec 2025 - Present View details
+[050]  Exit load, Stamp duty on investment: 0.005% (from July 1st, 2020), Tax implication, AK Amar Kalkundrikar Dec 2025 - Present View details
         chars=667  words=116  source=5  scheme=elss  warnings=['merged 3 small chunk(s)']
 
     HDFC ELSS Tax Saver - Direct Plan Growth Exit load Nil Stamp duty on investment: 0.005% (from July 1st, 2020) from July 1st 2020 Tax implication If you redeem within one year, returns are taxed at 20%. If you redeem after one year, returns exceeding Rs 1.25 lakh in a financial year are taxed at 12.5%. AK Amar Kalkundrikar Dec 2025 - Present View details AK Amar Kalkundrikar Dec 2025 - Present View details Education Mr. Kalkundrikar has done B.Com, CA, CFA, and MBA from Columbia Business School. Experience Prior to joining HDFC Asset Management Company Limited, he has worked with Nippon India Mutual Fund, and HDFC AMC. He worked with multiple roles at HDFC MF.
 
-[046]  DM Dhruv Muchhal Jun 2023 - Present View details
+[051]  DM Dhruv Muchhal Jun 2023 - Present View details
         chars=358  words=61  source=5  scheme=elss
 
     HDFC ELSS Tax Saver - Direct Plan Growth DM Dhruv Muchhal Jun 2023 - Present View details DM Dhruv Muchhal Jun 2023 - Present View details Education Mr. Dhruv has done B.Com, CA and CFA Experience Prior to joining HDFC MF,he has worked with Motilal Oswal Financial Services Ltd., Goldman Sachs, CRISIL Global Research & Analytics and Deloitte Haskins & Sells
 
-[047]  About HDFC ELSS Tax Saver Fund Direct Plan Growth
+[052]  About HDFC ELSS Tax Saver Fund Direct Plan Growth
         chars=625  words=113  source=5  scheme=elss
 
     HDFC ELSS Tax Saver - Direct Plan Growth About HDFC ELSS Tax Saver Fund Direct Plan Growth HDFC ELSS Tax Saver Fund Direct Plan Growth is a Equity Mutual Fund Scheme launched by HDFC Mutual Fund. This scheme was made available to investors on 10 Dec 1999. Amar Kalkundrikar is the Current Fund Manager of HDFC ELSS Tax Saver Fund Direct Plan Growth fund. The fund currently has an Asset Under Management(AUM) of ₹9,86,237 Cr and the Latest NAV as of 25 Sep 2026 is ₹1,447.38. The HDFC ELSS Tax Saver Fund Direct Plan Growth is rated Very High risk. Minimum SIP Investment is set to ₹500. Minimum Lumpsum Investment is ₹500. ;
 
-[048]  Investment Objective, Fund house
+[053]  Investment Objective, Fund house
         chars=776  words=112  source=5  scheme=elss  warnings=['merged 1 small chunk(s)']
 
     HDFC ELSS Tax Saver - Direct Plan Growth Investment Objective The scheme seeks to generate capital appreciation / income from a portfolio, comprising predominantly of equity & equity related instruments. Fund benchmark NIFTY 500 Total Return Index Scheme Information Document(SID) Fund house HDFC Mutual Fund Rank (total assets) #2 in India Total AUM ₹9,86,236.84 Cr Date of Incorporation 10 Dec 1999 Phone 022 – 66316333 E-mail [email protected] Website http://www.hdfcfund.com Launch Date 10 Dec 1999 Address "HDFC House", 2nd Floor, H. T. Parekh Marg, 165-166, BackbayReclamation, Churchgate Mumbai 400020 Custodian Deutsche Bank Registrar & Transfer Agent Cams Email [email protected] Website www.camsonline.com Address 7th Floor, Tower II, Rayala Towers, 158, Anna Salai,

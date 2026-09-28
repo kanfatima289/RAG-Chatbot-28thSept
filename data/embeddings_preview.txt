@@ -1,0 +1,64 @@
+==============================================================================
+EMBEDDING PREVIEW - first 5 chunks, first 10 of 384 dimensions
+==============================================================================
+Model       sentence-transformers/all-MiniLM-L6-v2
+Backend     onnx
+Window      512 tokens (CHUNK_SIZE 230 words)
+Dim         384
+Stored      54 vectors in data/chroma/mf_faq_f836b489
+Corpus date 2026-09-28  (from the mtime of data/clean/*.txt)
+
+Each vector is L2-normalised, so |v|^2 is 1.0 and cosine similarity is
+a plain dot product. The dimensions are shown at full float precision
+so a zeroed or dead dimension would be obvious here.
+
+The previewed chunks are the first N in document order, which means they
+all come from the AMC overview page and several share one section - so
+the vectors below look similar to each other. That is expected, not a
+sign the embedder is collapsing everything. data/chunks/chunks.txt has
+the full spread.
+
+[000]  HDFC Mutual Fund - AMC overview
+       section  Key facts
+       url      https://groww.in/mutual-funds/amc/hdfc-mutual-funds
+       dim[0:10]
+         +0.085761  -0.121321  -0.130402  +0.017785  +0.064020
+         +0.035337  +0.040836  +0.024673  -0.031833  -0.000538
+       |v|^2    1.000000   min -0.1538  max +0.1357
+
+[001]  HDFC Mutual Fund - AMC overview
+       section  List of HDFC Mutual Fund in India
+       url      https://groww.in/mutual-funds/amc/hdfc-mutual-funds
+       dim[0:10]
+         +0.043668  -0.069200  -0.128062  +0.018949  +0.087040
+         +0.024812  +0.023881  +0.093881  -0.005040  +0.016088
+       |v|^2    1.000000   min -0.1386  max +0.1416
+
+[002]  HDFC Mutual Fund - AMC overview
+       section  List of HDFC Mutual Fund in India
+       url      https://groww.in/mutual-funds/amc/hdfc-mutual-funds
+       dim[0:10]
+         +0.057620  -0.068564  -0.133962  +0.014453  +0.061474
+         +0.031115  +0.022925  +0.103362  -0.019777  +0.019231
+       |v|^2    1.000000   min -0.1340  max +0.1384
+
+[003]  HDFC Mutual Fund - AMC overview
+       section  List of HDFC Mutual Fund in India
+       url      https://groww.in/mutual-funds/amc/hdfc-mutual-funds
+       dim[0:10]
+         +0.053831  -0.093470  -0.111540  +0.055255  +0.096650
+         +0.043635  +0.004759  +0.097722  -0.028002  +0.018178
+       |v|^2    1.000000   min -0.1315  max +0.1472
+
+[004]  HDFC Mutual Fund - AMC overview
+       section  List of HDFC Mutual Fund in India
+       url      https://groww.in/mutual-funds/amc/hdfc-mutual-funds
+       dim[0:10]
+         +0.054326  -0.089511  -0.121547  +0.026485  +0.063485
+         +0.042166  +0.012998  +0.102793  -0.017950  +0.026526
+       |v|^2    1.000000   min -0.1281  max +0.1402
+
+------------------------------------------------------------------------------
+All 54 stored vectors are 384-dim and fit the
+512-token window. To see what was embedded, read
+data/chunks/chunks.txt.

@@ -11,9 +11,13 @@ one command and is committed on purpose.
 ## The decision, in one line
 
 Cut on the page's real `<h1>`..`<h6>` boundaries, window each section
-independently at **400 words** with **80 words** of overlap, prepend a
+independently at **230 words** with **80 words** of overlap, prepend a
 scheme-and-section breadcrumb to every chunk, and group consecutive
 sub-60-word sections into a single self-describing chunk.
+
+The 230 was **400** until phase 3 measured the real token lengths. See
+`CHUNK_SIZE is not a free parameter` below; that correction is the most
+important thing in this file.
 
 ## Why headings, and not a flat window
 
@@ -41,13 +45,65 @@ source has it, not because a heuristic guessed where to look.
 
 | Parameter | Value | Why |
 |---|---|---|
-| `CHUNK_SIZE` | 400 words | `all-MiniLM-L6-v2` truncates at 512 tokens; 400 words lands near that for this vocabulary, so a chunk is one vector rather than two averaged halves. Leaves room in Groq's 8k context for `TOP_K=5`. |
-| `CHUNK_OVERLAP` | 80 words (20%) | Pages are adjacent labelled strips ("Exit load" \| "1% within 1 year" \| "Stamp duty"). A boundary between a label and its value makes a chunk that answers nothing. Overlap makes each pair whole in at least one chunk. |
-| `MIN_SIZE` | 60 words | Recall@5 over a 49-chunk corpus - a 40-word fragment competes for one of five slots. |
-| `PREPEND_BREADCRUMB` | on | See below. |
+| `CHUNK_SIZE` | 230 words | Derived from `EMBED_MAX_TOKENS`, not chosen on its own. 244 words at the densest observed 2.02 tokens/word is 493 tokens, inside the 512-token window. See the next section. |
+| `CHUNK_OVERLAP` | 80 words | Pages are adjacent labelled strips ("Exit load" \| "1% within 1 year" \| "Stamp duty"). A boundary between a label and its value makes a chunk that answers nothing. Overlap makes each pair whole in at least one chunk. Was 20% of a 400-word chunk; it is now 35% of a 230-word chunk, but it only ever applies to a section longer than `CHUNK_SIZE`, which is 7 of 54 chunks. |
+| `MIN_SIZE` | 60 words | A 40-word fragment competes for one of five retrieval slots. |
+| `PREPEND_BREADCRUMB` | on | See below, and read its limits. |
 
-These are frozen defaults in `config.py`; each is env-overridable so phase 3
-can revisit recall without editing code.
+These are frozen defaults in `config.py`, mirrored in `.env`, and each is
+env-overridable. Note that `load_dotenv()` runs before the defaults are read, so
+a stale `.env` silently wins over an edit to `config.py` - that is how
+`CHUNK_SIZE=400` survived a config change during phase 3. `.env` is gitignored,
+so it is regenerated from `.env.example`.
+
+## CHUNK_SIZE is not a free parameter
+
+This is the one that was wrong and had to be fixed in phase 3.
+
+Phase 2 sized chunks at 400 words on the reasoning that 400 words is about 550
+tokens, which "sits under the 512-token MiniLM limit". Both halves of that are
+wrong, and the second one was the dangerous half.
+
+**The limit is 512 positions, not 512 words** - fine. But `all-MiniLM-L6-v2` is
+a 6-layer model with 512 position embeddings, and phase 2 assumed it was being
+compared against a 512-*token* budget while writing a word budget. Tokenised with
+the real tokenizer, this corpus is far denser than generic English:
+
+```
+tokens per word    min 1.19    median 1.54    max 2.02
+```
+
+The 2.02 is the AMC overview's `List of HDFC Mutual Fund in India`: 413 words of
+scheme names, rupee amounts and percentages. At 400 words that section was
+**835 tokens**.
+
+**The window is 256, not 512, by default.** sentence-transformers ships
+`max_seq_length: 256` for this model. Four chunks of 49 were over 256 and three
+were over 512, so they would have been truncated with no error anywhere.
+
+Truncation is worse than an oversized chunk. A large chunk is merely a coarse
+unit; a truncated chunk produces a vector that **does not represent the document
+that is stored next to it**, and its tail is unretrievable with no visible
+symptom. Measured cost, comparing a 512-token input truncated at 256 against the
+untruncated reference: **cosine 0.930**.
+
+The fixes, in order of discovery:
+
+1. `EMBED_MAX_TOKENS` raised 256 -> 512. Verified safe rather than assumed: the
+   ONNX export carries a full 512-position table, and at 512 tokens the ONNX and
+   torch backends agree to **cosine 1.000000** on the longest chunk in the
+   corpus. (At 256 they agree to 0.930 - the gap *is* the truncation.)
+2. `CHUNK_SIZE` 400 -> 250. Left one chunk at 532 tokens, because the breadcrumb
+   adds ~14 words to the body and 14 x 2.02 is 28 tokens.
+3. `CHUNK_SIZE` 250 -> **230**. 230 + 14 = 244 words, 244 x 2.02 = **493
+   tokens**, inside the window with room to spare.
+
+Result: 54 chunks, 60-243 words, **0 chunks over 512 tokens**.
+`tests/test_phase3_store.py::test_no_chunk_exceeds_the_embedding_window`
+tokenises the real corpus on every run and fails if that relationship ever rots.
+`rag/embeddings.py` also logs a warning naming the offending lengths, so a
+future corpus change surfaces as a warning at build time rather than as
+silently degraded retrieval.
 
 ## The breadcrumb - the single highest-value decision
 
@@ -68,6 +124,55 @@ This is not decoration. Two findings forced it:
 Without the fund name in the embedded text, a retrieved number cannot be
 attributed to a scheme. S2 (correct scheme) and S8 (numeric facts exact) both
 fail. Prefixing the path is the cheapest fix and needs no reranker.
+
+### What the breadcrumb could not fix
+
+Measured in phase 3, and recorded here because it sets up phase 4.
+
+The breadcrumb is necessary but not sufficient. `all-MiniLM-L6-v2` **mean-pools
+over all tokens**, so a 7-token breadcrumb in a 60-token chunk carries about 11%
+of the vector and the body carries the rest. Taking one body and varying only
+the fund name in the breadcrumb:
+
+```
+cosine between the four fund names over an identical body
+
+              flexi    mid    large    elss
+  flexi      1.000   0.952   0.943   0.763
+  mid        0.952   1.000   0.970   0.771
+  large      0.943   0.970   1.000   0.759
+  elss       0.763   0.771   0.759   1.000
+```
+
+For scale, unrelated sentences on this model sit at cosine 0.05-0.15. So the
+name moves the vector by ~0.14 while the body moves it by ~0.86. Consequence: a
+same-topic chunk of the *wrong* fund lands within 0.003-0.03 of the right one,
+and the top hit is effectively arbitrary.
+
+On 13 natural-language questions, rank-1 picks the right fund **5 times**. The
+margins are the problem, not the model: mean pairwise cosine across the corpus
+is 0.70, so the chunks are a tight cluster with a handful of near-centroid
+"hub" chunks that win whatever you ask.
+
+Two data-side fixes were implemented and measured, and **both were rejected**:
+
+| Fix | Result | Rejected because |
+|---|---|---|
+| Drop the AMC `List of HDFC Mutual Fund in India` table | 5/13, unchanged | The table chunks are the highest-centrality vectors in the corpus (mean-cos 0.76-0.78 to everything) and contain all 30 HDFC scheme names, so it was the obvious suspect. Removing it moved nothing, so they were not what was winning. Worth revisiting anyway as the attribution hazard phase 2 logged, but it is not this bug. |
+| Repeat the breadcrumb 2x, then 3x | 6/13 at 2x, 5/13 at 3x | Margins *halve* (median 0.027 -> 0.011 -> 0.007), and the extra tokens push chunks to 1,451 tokens - back over the window, requiring a smaller `CHUNK_SIZE` and a still smaller body. Trades a small ranking gain for a real truncation risk. |
+
+The actual fix is a **lexical term in the score**: `Large Cap` and `Mid Cap` are
+rare, high-IDF tokens, which is exactly what BM25 is for and exactly what a
+mean-pooled dense vector is bad at. That is retrieval logic, and
+`implementation.md` assigns retrieval to phase 4. So phase 3 ships a faithful
+index and records the gap:
+
+* `test_gate_query_retrieves_the_documented_source` passes, in the exact wording
+  implementation.md's gate specifies (`exit load HDFC Large Cap` -> `large_cap`,
+  score 0.3374 against 0.3288 for the runner-up).
+* `test_verbose_paraphrase_resolves_to_the_right_fund` is an explicit `xfail`
+  carrying the numbers and this analysis, so phase 4 inherits a failing test
+  rather than a forgotten one.
 
 ## What gets dropped, and why
 
@@ -139,6 +244,14 @@ snapshots. It asserts:
 
 Run it with `python -m pytest tests/test_phase2_corpus.py`.
 
+`tests/test_phase3_store.py` (18 tests + 12 xfail) covers the vector side, and
+adds the two assertions that protect the sizing decision above:
+`test_no_chunk_exceeds_the_embedding_window` (tokenises the real corpus, fails
+if anything crosses 512) and `test_embedding_is_deterministic` (guards the
+length-sorted batching from reordering results against the caller's list, which
+would silently mis-attribute every citation).
+
 ## Result
 
-**49 chunks** (AMC overview 20, each fund 7-8), mean 107 words, range 60-413.
+**54 chunks** (AMC overview 25, each fund 7-8), mean 105 words, range 60-243.
+Longest chunk is 485 tokens against a 512-token window.

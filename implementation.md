@@ -157,20 +157,25 @@ Run these; all must pass.
 ### What this phase does
 
 - Loads `all-MiniLM-L6-v2` **once per process** as a module-level singleton. Loading per query would add seconds to every answer.
-- Embeds all chunks and stores them in `data/chroma/` under `mf_faq_{hash8}`, where the hash covers the clean text **and** the chunk parameters — so changing either produces a new collection rather than a corrupted one.
-- Configures cosine space at collection creation.
+- Embeds all chunks and stores them in `data/chroma/` under `mf_faq_{hash8}`, where the hash covers the clean text **and** the shaping parameters (`CHUNK_SIZE`, `CHUNK_OVERLAP`, `MIN_SIZE`, `PREPEND_BREADCRUMB`, `EMBED_MODEL`, `EMBED_MAX_TOKENS`, plus a schema version) — so changing any of them produces a new collection rather than a corrupted one (S16).
+- Configures cosine space at collection creation (`hnsw:space=cosine`, 1.x API) with `embedding_function=None` to prevent chromadb from silently re-embedding with a different model.
 - Exposes a raw `query()` for this phase's manual testing, before any retrieval logic exists.
+- **Batching + memory:** balances `EMBED_BATCH_SIZE` and leaves ONNX Runtime's CPU arena disabled (`EMBED_ARENA=0`). Measures peak RSS and log it (306 MB in this build, 218 MB backend-only).
 
-**ONNX note:** prefer the ONNX Runtime path over PyTorch. ChromaDB already installs `onnxruntime`, so this shares a dependency and keeps memory low enough for Render's 512 MB (architecture §8.3, R7). Measure RSS once here — if embedding blows past ~400 MB, the Render deploy will OOM and you want to know now, not on deploy day.
+**ONNX implementation note:** the ONNX path is driven directly (mean pooling + L2 normalise) rather than through `SentenceTransformer(backend="onnx")`, because `optimum[onnxruntime]` pins `transformers<5` and breaks sentence-transformers 6.1. The direct path needs no new dependencies, matches torch to cosine 1.000000 at 512 tokens, and cuts peak RSS to ~218 MB. Both backends remain selectable via `EMBED_BACKEND`.`
 
 ### Gate — verify before Phase 4
 
-1. Re-run ingestion. Confirm `data/chroma/` exists with a directory whose name ends in the expected 8-char hash.
+1. Re-run ingestion. Confirm `data/chroma/` exists with a directory whose name ends in the expected 8-char hash. (`mf_faq_f836b489`)
 2. **Re-run it again and confirm the hash is identical** — proving the collection name is deterministic and re-ingestion is idempotent (S16).
-3. Open a query in Python, embed a known question by hand (e.g. "exit load HDFC Large Cap"), query the collection, and confirm the top result is a chunk about exit load on the Large Cap page — **with `source_url` pointing at doc 4, not another scheme** (S2).
+3. Open a query in Python, embed a known question by hand (e.g. "exit load HDFC Large Cap"), query the collection, and confirm the top result is a chunk about exit load on the Large Cap page — **with `source_url` pointing at doc 4, not another scheme** (S2). *(The gate's terse form passes by 0.009; verbose paraphrases do not on dense-only MiniLM — this limitation is recorded as an explicit `xfail` in the tests and documented in §6 of architecture.md and CHUNKING.md.)*
 4. Confirm every stored embedding is 384-dimensional (C7).
-5. Confirm the stored `document` is the heading-prefixed text, per §8.2.
-6. Note peak memory usage. If above ~400 MB, switch to the ONNX path before continuing.
+5. Confirm the stored `document` is the breadcrumb-prefixed text, per §8.2.
+6. Note peak memory usage: peak RSS **306 MB** (embed+store). Backend-only 218 MB on ONNX, 537 MB on torch. Stay on ONNX for Render.
+7. **Verify no chunk exceeds `EMBED_MAX_TOKENS`.** Run `python -m pytest tests/test_phase3_store.py -q` — `test_no_chunk_exceeds_the_embedding_window` asserts this on the real corpus.
+8. **Verify determinism.** `test_embedding_is_deterministic` asserts batch order/padding cannot perturb vectors (guards the length-sorted batching choice).
+9. **Verify persistence in a separate process.** From a fresh `python` invocation that never ran ingestion, open the collection, confirm `count()==54` and 384-dim, then query "exit load HDFC Large Cap" and observe the same top hit with `source_url` pointing to doc 4. (Done in the final verification.)
+10. **Confirm orphan index dirs are pruned.** After a `--rebuild`, the live UUID directory is the only one under `data/chroma/` and the collection is readable. `test_prune_keeps_the_live_index` covers this.
 
 ---
 
@@ -187,22 +192,32 @@ Run these; all must pass.
 
 ### What this phase does
 
-**G1 — PII (before anything else).** Regex for PAN, Aadhaar, 10+ digit account numbers, email, phone. On a hit: refuse, **never echo the value**, **never log the question body**, return (C3, S11, R9).
+**G1 — PII (before anything else).** Regex for PAN, Aadhaar, labelled account/OTP/CVV, email, phone. On a hit: refuse, **never echo the value**, **never log the question body**, return (C3, S11, R9).
 
 **G2 — Intent (before the LLM).** Rule-based classification of the refusal categories in PRD §5.2: buy/sell/hold, "should I", "which is better", "best fund", "returns of", "is now a good time", "split my money". Returns `REFUSE` plus an educational link from the registry. Rules-first, not LLM-first: free, deterministic, and it covers the frozen eval set. Log unmatched-but-suspicious questions (without body text) for tuning.
 
-**G3 — Output (after the LLM).** Scans the draft for advice language ("you should", "I recommend", "best", "suitable for you"), returns figures, stray URLs, and sentence count. Overrides to refusal or truncates (C4, C5, S6, S12).
+**G3 — Output (after the LLM).** Scans the draft for advice language ("you should", "I recommend", "best", "suitable for you") and performance claims, strips model-written URLs, and enforces the sentence cap (C4, C5, S6, S12).
 
 This phase needs no LLM, no index, and no network — which is exactly why it is testable in isolation and why it comes before phase 5.
 
 ### Gate — verify before Phase 5
 
-1. `pytest tests/test_guards.py` → all green.
-2. Feed the 3 PRD §5.3 PII inputs. Each refuses, and the output does **not** contain the PAN, account number, email, or phone back.
-3. Feed the 8 PRD §5.2 refusal questions. All 8 return the polite facts-only message with an educational link (S10).
-4. Feed the 10 PRD §5.1 factual questions. **All 10 must pass straight through G1 and G2** — a false positive here is the most damaging bug in the project, because the guard would refuse a question it should answer. This is a stronger gate than it looks.
-5. Confirm no guard writes the question body to disk or logs (R9).
-6. Confirm G3 flags a deliberately advice-laden draft you construct by hand.
+1. ✔ `pytest tests/test_guards.py` → **142 passed**.
+2. ✔ The 3 PRD §5.3 PII inputs each refuse, and the output does **not** contain the PAN, account number, email, or phone back. Asserted against the message, stdout, the log and the returned object.
+3. ✔ The 8 PRD §5.2 refusal questions all return the polite facts-only message with an educational link drawn from the registry (S10).
+4. ✔ All 10 PRD §5.1 factual questions pass straight through G1 and G2 — plus **24 paraphrases** that are not in the frozen set, because a guard fitted only to the ten questions we can see is not a guard.
+5. ✔ No guard writes the question body to disk or logs (R9). Only the *name* of the rule that fired is retained.
+6. ✔ G3 flags 7 advice drafts and 6 performance-claim drafts, strips model-written URLs, and truncates to 3 sentences *without refusing*.
+
+### Findings from this phase
+
+**The guard cannot be a keyword list.** The obvious implementation — refuse on `buy|sell|hold|returns|performance` — fails the gate immediately: PRD §5.1 row 2 is *"What is the **exit load** on HDFC Large Cap?"*, row 7 is *"How do I download a capital **gains** statement?"*, and the corpus itself contains *"**returns** are taxed at 20%"*. Each rule here matches a construction (`should I`, `better than`, `how much will I make`) instead, and each was tuned against a measured false-positive set. Full table in architecture §3.7.
+
+**The corpus contains the data C4 forbids us reporting.** The AMC overview publishes a labelled `1Y | 3Y | 5Y | 7Y | 10Y Returns` table, so "which fund gave the best 1 year return" *is* answerable from the corpus — and PRD C4/S12 forbid answering it. The guard refuses; the data stays. **Phase 5 must treat a G3 `PERFORMANCE` refusal as authoritative**, because retrieved context will contain return figures and a facts-only prompt alone will not reliably stop the model quoting them.
+
+**`MIN_SCORE = 0.25` is measured, not guessed.** The 10 in-scope questions score 0.29–0.48 against the built index; "quantum computing tutorial", "bitcoin price today" and "recipe for biryani" score 0.16–0.21. The floor separates the two populations with margin on both sides, so S7's "not in corpus" path is trustworthy. Re-measure once phase 6 changes retrieval.
+
+**Retrieval is the remaining risk, and it is now quantified.** Running the frozen set through guard → real Chroma query gives **S1 Recall@5 = 8/10** and **S2 correct-scheme-at-rank-1 = 1/10**. The two Recall@5 misses are both AMC-overview questions ("capital gains statement", "direct vs regular plan") that return no AMC chunk at all. This is the phase-3 finding at eval scale, and it is phase 5's problem to fix, not this phase's.
 
 ---
 

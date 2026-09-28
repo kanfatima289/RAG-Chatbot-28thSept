@@ -38,11 +38,13 @@ data/raw/
 # ============================================================
 # DELIBERATELY NOT IGNORED - these must be committed
 # ============================================================
-#   data/clean/*.txt   offline fallback so the demo survives a
-#                      blocked fetch, and is what Render ingests (R2)
-#   data/chunks.txt    required deliverable, the chunking review (C6)
-#   sources.md         deliverable 2
-#   sources.csv        deliverable 2
+#   data/clean/*.txt          offline fallback so the demo survives a
+#                             blocked fetch, and is what Render ingests (R2)
+#   data/chunks/chunks.txt    required deliverable, the chunking review (C6)
+#   data/embeddings_preview.txt  proof the embedding stage produces real
+#                             384-dim vectors; small, and reviewers read it
+#   sources.md                deliverable 2
+#   sources.csv               deliverable 2
 # If you add a blanket "data/" ignore, the demo breaks on Render.
 
 # ============================================================
