@@ -96,11 +96,14 @@ def test_stray_bracket_references_are_stripped() -> None:
 
 def test_full_width_citation_brackets_are_normalised() -> None:
     # Measured: openai/gpt-oss-20b emitted 【1】 on this corpus. It must be
-    # resolved to the same registry URL as [1], and never leak into the reply.
+    # resolved to the same registry URL as [1], never leak into the reply, and
+    # leave no " ." / ".." artifact behind the deleted marker.
     a = pipeline.answer(FLEXI_Q, call=stub("The expense ratio is 0.77%【1】."))
     assert a.status == Status.ANSWERED
     assert "【" not in a.message and "】" not in a.message
     assert "[" not in a.message and "]" not in a.message
+    assert "0.77%." in a.message, f"marker left a gap: {a.message!r}"
+    assert " ." not in a.message and ".." not in a.message
     assert _urls(a.message) == [BY_SCHEME["flexi_cap"].url]
 
 

@@ -1,0 +1,31 @@
+# Render deployment contract (PRD C14). Free-tier compatible.
+#
+# Start command mirrors architecture.md §start: rebuild the index from the
+# checked-in data/clean/ (ephemeral disk on free tier, see README "S16 is
+# local-only") and then serve Streamlit on the port Render provides.
+#
+# GROQ_API_KEY is NOT in this file - set it in the Render dashboard as a
+# secret (PRD C9: the key lives in env only, never in the repo).
+#
+# The build step warms the HF Hub cache for all-MiniLM-L6-v2's two files so
+# the start command runs with HF_HUB_OFFLINE=1 - the model is baked into the
+# image, no Hub call at boot ("bake the MiniLM model into the image",
+# implementation.md phase 6).
+
+services:
+  - type: web
+    name: hdfc-mf-facts
+    runtime: python
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python -c "from huggingface_hub import hf_hub_download; [hf_hub_download('sentence-transformers/all-MiniLM-L6-v2', f, revision='main') for f in ('tokenizer.json', 'model.onnx')]"
+    startCommand: |
+      RAG_OFFLINE=1 HF_HUB_OFFLINE=1 python -m ingest.run_ingestion --offline &&
+      RAG_OFFLINE=1 HF_HUB_OFFLINE=1 python -m streamlit run app/streamlit_app.py --server.port $PORT --server.headless true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: EMBED_THREADS
+        value: "2"
+    healthCheckPath: /_stcore/health

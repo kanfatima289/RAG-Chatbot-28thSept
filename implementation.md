@@ -315,6 +315,48 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 7. Re-read `README.md` known-limits and confirm it states: corpus freeze date, **that all sources are groww.in and not the official AMC (R1, resolved - state it as a limit, not a TODO)**, the ELSS/statutory-accuracy limit, that answers are not advice, and that S16 is local-only.
 8. Confirm `git log` contains no `.env` and no key. `git log --all -- .env` must return nothing.
 
+### Findings from this phase
+
+**Run on 2026-09-28; Streamlit confirmed over Gradio (decision 2 below).** The
+app is `app/streamlit_app.py` and was verified three ways before being
+declared done: (1) a headless `streamlit run` with a `/_stcore/health` 200
+probe; (2) three committed `streamlit.testing.v1.AppTest` tests in
+`tests/test_streamlit_app.py` - boot + disclaimer + PRD-fixed example buttons,
+an example click producing a Q&A pair with exactly one approved source link and
+a "Show retrieved chunks" expander, and the C13 no-key banner; (3) live probes
+against the empty-store and real-key states.
+
+**Gate checks performed locally (gate 6 is the only one that cannot run
+here):**
+
+- Gate 2: an empty `CHROMA_PATH` renders the warning banner with the exact
+  ingest command (`python -m ingest.run_ingestion --offline`) and stops cleanly
+  - no traceback, verified with AppTest against a fresh temp chroma dir.
+- Gate 3: the missing-`GROQ_API_KEY` path shows the friendly banner instead of
+  a crash; equally, an empty `.env` leaves retrieval and the whole UI usable.
+- Gate 5 (S19): 5 consecutive clean live Groq runs, latencies 1.7-7.1 s on the
+  free tier (first run pays the embedder/model warm-up).
+- Gate 4: all six deliverables exist - `README.md` (3), `sample_qa.md` with 8
+  verbatim live answers (4), `DISCLAIMER.md` (5), `sources.md` (2),
+  `CHUNKING.md` + `data/chunks/chunks.txt` (6).
+- Gate 7: README states the corpus freeze date (2026-09-28), the groww.in-not-
+  official-AMC provenance limit, the ELSS statutory-accuracy limit, that
+  answers are not advice, and that S16 (persisted index) is a local-run
+  guarantee only.
+- Gate 8: `git log --all -- .env` returns nothing (verified post-commit).
+- Gate 6 (deployed Render link) needs the demo owner's Render account; the
+  contract is in `render.yaml` (build warms the MiniLM Hub cache, start runs
+  `ingest.run_ingestion --offline` then Streamlit with `HF_HUB_OFFLINE=1`, and
+  `GROQ_API_KEY` is a dashboard secret).
+
+**Two cosmetic robustness fixes landed during phase-6 verification.** Live
+answers were arriving as `0.77% .` / `₹100.  .` - the citation-marker strip
+blanked the marker with a space, leaving a gap or a double period. `rag/
+postprocess.strip_references` now deletes the marker and collapses the residue
+(`\s+\.` and a doubled period); the full-width-bracket test now pins the clean
+output. `sample_qa.md` was regenerated after the fix so the deliverable matches
+what the app prints today (regenerate anytime with `python -m app.cli --one`).
+
 ---
 
 ## Risk Register for Implementation
@@ -339,7 +381,7 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 | # | Decision | Status | Consequence to carry into the build |
 |---|---|---|---|
 | 1 | **R1 - source provenance.** Corpus is the 5 `groww.in` URLs, **unchanged and unexpanded**. No `hdfcmf.com` or any other source. | **Resolved 2026-09-28** | Every citation is a groww.in URL. The C4 "official factsheet" fallback now resolves to the relevant **scheme page inside our own corpus** - do not add an AMC URL to fix it. Write the provenance limitation into the README known limits. |
-| 2 | Streamlit confirmed over Gradio? | Open | Cheap to change now, annoying later. Blocks Phase 6 only. |
-| 3 | Groq API key in hand? | Open | Generation cannot be verified without it. Blocks Phase 5. |
+| 2 | Streamlit confirmed over Gradio? | **Resolved 2026-09-28: Streamlit** | `app/streamlit_app.py` + three committed AppTest UI tests. Matches the phase-6 plan file (`app/streamlit_app.py`) and Render's simplest Python web service. |
+| 3 | Groq API key in hand? | **Resolved 2026-09-28** | Key set in `.env` (never committed). This key serves `gpt-oss-20b` / `qwen3.8-27b` but **not** `llama-3.1-8b-instant`; `openai/gpt-oss-20b` measured best and became the `GROQ_MODEL` default. Live eval green. |
 
 **Not blocking Phase 2 any more.** With R1 closed, Phases 1 and 2 can start immediately.

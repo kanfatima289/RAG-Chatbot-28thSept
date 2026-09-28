@@ -107,8 +107,16 @@ def resolve_citation(
 
 
 def strip_references(text: str) -> str:
-    """Remove remaining `[n]` markers - the citation is injected once below."""
-    return _REF.sub(" ", _normalize_citations(text)).strip()
+    """Remove remaining `[n]` markers - the citation is injected once below.
+
+    Markers are deleted rather than blanked: a model that writes ``0.77% [1].``
+    (or full-width ``【1】``) otherwise leaves a stray space or a double period,
+    which showed up in live answers as ``0.77% .`` / ``₹100.  .``.
+    """
+    cleaned = _REF.sub("", _normalize_citations(text))
+    cleaned = re.sub(r"\s+\.", ".", cleaned)  # "0.77% ." -> "0.77%."
+    cleaned = re.sub(r"\.\.(?!\.)", ".", cleaned)  # "₹100.." -> "₹100."
+    return cleaned.strip()
 
 
 def looks_like_dont_know(text: str) -> bool:
