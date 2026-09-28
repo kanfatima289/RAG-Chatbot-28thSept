@@ -359,6 +359,27 @@ USER_AGENT = (
 )
 
 
+# --------------------------------------------------------------------------
+# Conversation memory (phase-6 follow-on)
+# --------------------------------------------------------------------------
+# The last N messages the follow-up rewriter may look at when un-folding a
+# question whose subject is only in the conversation ("what about its fees?" ->
+# "What is the expense ratio of HDFC Flexi Cap Fund Direct Growth?"). 10
+# messages = the most recent 5 Q/A turns - plenty of referent for the class
+# demo, and small enough that the whole window fits comfortably in the rewrite
+# call's token budget. Everything about the feature fails open (rag/memory.py):
+# no history, an off-topic guard, a missing key or a network error all fall
+# back to the stateless pipeline this feature extends.
+MEMORY_MESSAGES = int(os.getenv("MEMORY_MESSAGES", "10"))
+
+# A rewrite is a tiny completion - one standalone question string, not a
+# fact-answer - so it gets a budget well below MAX_TOKENS. It still has to
+# leave room for the model's reasoning tokens (see the MAX_TOKENS note above),
+# but a follow-up should never cost more latency than the full answer that
+# follows it.
+MEMORY_REWRITE_MAX_TOKENS = int(os.getenv("MEMORY_REWRITE_MAX_TOKENS", "256"))
+
+
 def ensure_dirs() -> None:
     """Create the generated data directories. Safe to call repeatedly."""
     for d in (DATA_DIR, CLEAN_DIR, RAW_DIR):

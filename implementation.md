@@ -357,6 +357,50 @@ postprocess.strip_references` now deletes the marker and collapses the residue
 output. `sample_qa.md` was regenerated after the fix so the deliverable matches
 what the app prints today (regenerate anytime with `python -m app.cli --one`).
 
+### Post-phase-6 addition — conversation memory (chat follow-ups)
+
+After the phase-6 commit, a follow-up feature was added on top of the finished
+demo: the chat keeps the last `MEMORY_MESSAGES` (default 10) turns and, before
+retrieval, rewrites a follow-up that lacks a subject into a standalone
+question ("what about its fees?" -> "What is the expense ratio of HDFC Flexi
+Cap Fund Direct Growth?"). This is an extension beyond the PRD, added because
+a stateless chat bot that cannot resolve "its" is a poor class demo.
+
+Design (all implemented in `rag/memory.py` + `rag/pipeline.py`):
+
+- **Where it sits in the spine:** `question -> G1/G2 -> rewrite -> G1/G2 ->
+  retrieve -> generate -> post-process`. The RAW question is screened first so
+  PII never reaches the rewriter's model call; the REWRITTEN text is screened
+  again so a rewrite cannot smuggle a new advice/returns request past the gate
+  in new clothing (tested: "the returns?" -> "What were the 1-year
+  returns...?" refuses with `advice:RETURNS`).
+- **Zero-cost unless it is needed:** no history, or a question that names its
+  subject (a scheme, the AMC, "hdfc"), is used verbatim with no model call.
+  The metric words ("expense ratio", "exit load") deliberately do NOT count as
+  a subject, because "and the expense ratio?" is exactly the follow-up the
+  history is for.
+- **Fail-open everywhere:** missing key, network error, or a junk/empty reply
+  all return the question unchanged, so memory can never degrade the demo
+  below the stateless pipeline it extends. The rewrite uses its own budget
+  (`MEMORY_REWRITE_MAX_TOKENS=256`, well below MAX_TOKENS because a rewritten
+  question is a short string) via the generator's shared `complete()` retry
+  path.
+- **Separate seam:** `pipeline.answer(..., history=..., rewrite_call=...)`;
+  `rewrite_call` is distinct from the generation `call` so tests script each
+  independently.
+- **Visible grounding of the feature:** the CLI prints `(resolved follow-up:
+  ...)` and the UI shows a caption under the answer, so a reviewer sees the
+  resolution instead of wondering why a question with no fund name was
+  answered about one.
+- **Verified:** 15 new tests in `tests/test_memory.py` (window slice, subject
+  anchor, fail-open, junk replies, PII/advice before rewrite, re-screen after
+  rewrite, retrieval-on-rewritten-question) + 2 UI tests, full suite 261
+  passed / 1 xfail; live probe confirmed gpt-oss rewrites *"what about its
+  exit load?"* and answers it against the flexi_cap page correctly.
+- **Invariant kept:** the answer prompt (`build_messages`) still sees only the
+  standalone question - history appears ONLY in the rewrite prompt, never in
+  the answer (S7).
+
 ---
 
 ## Risk Register for Implementation

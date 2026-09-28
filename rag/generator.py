@@ -1,6 +1,7 @@
-"""One bounded, retried call to Groq. Never more than that.
+"""Two bounded, retried calls to Groq. Never more than that.
 
-    generate(question, context) -> draft answer text
+    generate(question, context)  -> draft answer text
+    complete(messages, ...)      -> raw chat call, shared with rag/memory.py
 
 Three properties, each tied to a PRD row:
 
@@ -92,7 +93,9 @@ def generate(
 
     `call` overrides the network path - used by tests and by the evaluator's
     stub mode. Its signature is deliberately just `(messages) -> str` so a
-    fake is trivially honest to write.
+    fake is trivially honest to write. The network path is `complete()`,
+    shared with the follow-up rewriter (rag/memory.py) so both calls get the
+    same retry, backoff and empty-completion handling.
     """
     from rag.prompts import build_messages
 
@@ -100,7 +103,31 @@ def generate(
 
     if call is not None:
         return call(messages).strip()
+    return complete(messages)
 
+
+def complete(
+    messages: list[dict],
+    *,
+    max_tokens: Optional[int] = None,
+) -> str:
+    """One bounded, retried chat call to Groq. Never more than that.
+
+    `max_tokens` defaults to config.MAX_TOKENS; the rewriter passes a smaller
+    budget because a rewritten question is a short string, not a fact-answer.
+
+    Three properties, each tied to a PRD row:
+
+    - **Bounded** (`GROQ_MAX_ATTEMPTS` attempts, `GROQ_TIMEOUT_S`, the token
+      budget): a free-tier container and a live demo both need the call to
+      end. C12/R8.
+    - **Retried once on 429/5xx** with a short backoff (PRD R8). A timeout or
+      a 5xx is a rate-limit or an upstream hiccup; a 400 is a bug and is not
+      retried. The empty-completion retry is described inside the loop.
+    - **Key-gated**: with no key, `NoGroqKey` is raised - the caller (CLI, UI,
+      or the memory rewriter, which catches it and fails open) decides how to
+      be helpful.
+    """
     if not config.has_groq_key():
         raise NoGroqKey(
             "GROQ_API_KEY is not set in .env. Add it to generate live answers; "
@@ -109,13 +136,14 @@ def generate(
 
     client = _real_client()
     last_error: BaseException | None = None
+    budget = config.MAX_TOKENS if max_tokens is None else max_tokens
     for attempt in range(1, config.GROQ_MAX_ATTEMPTS + 1):
         try:
             completion = client.chat.completions.create(
                 model=config.GROQ_MODEL,
                 messages=messages,
                 temperature=0,
-                max_tokens=config.MAX_TOKENS,
+                max_tokens=budget,
                 timeout=config.GROQ_TIMEOUT_S,
             )
             content = (completion.choices[0].message.content or "").strip()

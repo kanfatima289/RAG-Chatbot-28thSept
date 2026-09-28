@@ -9,9 +9,14 @@ by the chunks that were (or were not) searched, with their dense and lexical
 scores, so a wrong answer is diagnosable at the terminal instead of being a
 black box.
 
-No Groq key? Retrieval, chunk display and the refusals all still work; only
-the generated answer needs GROQ_API_KEY in .env. The CLI says so plainly
-instead of crashing (C13).
+The REPL also keeps the last `config.MEMORY_MESSAGES` turns and passes them to
+the pipeline, so a follow-up ("what about its fees?") is rewritten into a
+standalone question before retrieval (rag/memory.py). The rewrite is shown as
+a "resolved follow-up" line when it changes the question.
+
+No Groq key? Retrieval, chunk display, the follow-up rewrite and the refusals
+all still work; only the generated answer needs GROQ_API_KEY in .env. The CLI
+says so plainly instead of crashing (C13).
 """
 
 from __future__ import annotations
@@ -20,7 +25,7 @@ import argparse
 import sys
 
 import config
-from rag import generator, pipeline
+from rag import generator, memory, pipeline
 
 
 def _prepare_console() -> None:
@@ -52,9 +57,10 @@ def render(question: str, ans, k: int, show_chunks: bool = True) -> str:
     head = f"{ans.status.value}"
     if ans.rule:
         head += f"  [{ans.rule}]"
-    lines = [f"{head}:", ""]
-    lines += ans.message.splitlines()
-    lines += ["", ""]
+    lines = [f"{head}:"]
+    if ans.rewritten and ans.rewritten != question:
+        lines.append(f"  (resolved follow-up: {ans.rewritten})")
+    lines += ["", *ans.message.splitlines(), "", ""]
     if show_chunks:
         lines += format_chunks(list(ans.chunks), ans.narrowed_by, k)
         lines += [""]
@@ -66,7 +72,7 @@ def interactive(k: int, stub: bool = False) -> None:
 
     n_chunks = store.get_collection().count()
     key_state = f"{config.GROQ_MODEL} (key {'set' if config.has_groq_key() else 'NOT set'})"
-    print("HDFC Mutual Fund FAQ - phase 5 CLI")
+    print("HDFC Mutual Fund FAQ - CLI")
     print(f"corpus: {n_chunks} chunks across 5 groww.in pages")
     print(f"model : {key_state}")
     print()
@@ -74,9 +80,12 @@ def interactive(k: int, stub: bool = False) -> None:
         print("NOTE: GROQ_API_KEY is empty in .env, so answers need it before they")
         print("can be generated. Retrieval and refusals work without it.")
         print()
+    print("Follow-ups are remembered: \"what about its fees?\" after a fund")
+    print(f"question is resolved against the last {config.MEMORY_MESSAGES} messages.")
     print('Type a question, or "quit".')
     print()
 
+    history: list[dict] = []
     while True:
         try:
             q = input("You> ").strip()
@@ -88,7 +97,13 @@ def interactive(k: int, stub: bool = False) -> None:
         if q.lower() in {"quit", "exit", ":q"}:
             break
         try:
-            ans = pipeline.answer(q, k=k, call=generator.stub_generator if stub else None)
+            ans = pipeline.answer(
+                q,
+                k=k,
+                call=generator.stub_generator if stub else None,
+                rewrite_call=memory.stub_rewriter if stub else None,
+                history=history[-config.MEMORY_MESSAGES:] if history else None,
+            )
         except generator.NoGroqKey as exc:
             print(f"no key: {exc}")
             print()
@@ -99,6 +114,8 @@ def interactive(k: int, stub: bool = False) -> None:
             continue
         print(render(q, ans, k))
         print()
+        history.append({"role": "user", "content": q})
+        history.append({"role": "assistant", "content": ans.message})
 
 
 def one_shot(question: str, k: int, show_chunks: bool = True, stub: bool = False) -> int:

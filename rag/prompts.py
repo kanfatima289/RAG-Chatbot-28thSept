@@ -55,3 +55,49 @@ def build_messages(question: str, context: str) -> list[dict]:
             "content": USER_TEMPLATE.format(question=question, context=context).strip(),
         },
     ]
+
+
+REWRITE_SYSTEM = """You are a rewriter for a factual assistant that answers questions about a small,
+fixed corpus of HDFC Mutual Fund pages. The assistant has no memory, so every
+question it searches must stand on its own.
+
+Rewrite the user's follow-up question into a standalone question that makes
+sense without the conversation:
+
+- Resolve references such as "it", "its", "this fund", "the fund", "that
+  scheme", "the direct plan" to the concrete entity they refer to in the
+  conversation.
+- Change nothing about what is being asked: keep the same metric, the same
+  fund, the same wording wherever it is already clear.
+- If the question is already standalone, return it unchanged.
+- Output ONLY the rewritten question - no quotes, no labels, no explanation."""
+
+REWRITE_USER_TEMPLATE = """Conversation so far (most recent last):
+
+{history}
+
+Follow-up question: {question}"""
+
+
+def build_rewrite_messages(question: str, history: list[dict]) -> list[dict]:
+    """Messages for the follow-up rewriter (rag/memory.py).
+
+    `history` is the already-windowed last turns as [{"role", "content"}].
+    This is deliberately the ONLY place conversation history touches the
+    pipeline: the rewriter turns the follow-up into a single standalone
+    question, and the answer prompt (build_messages) still sees just that
+    question - the answer itself never trains on the conversation (S7).
+    """
+    lines = []
+    for m in history:
+        role = "user" if m.get("role") == "user" else "assistant"
+        lines.append(f"{role.upper()}: {m.get('content', '')}")
+    return [
+        {"role": "system", "content": REWRITE_SYSTEM.strip()},
+        {
+            "role": "user",
+            "content": REWRITE_USER_TEMPLATE.format(
+                history="\n".join(lines), question=question
+            ).strip(),
+        },
+    ]

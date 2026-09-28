@@ -22,6 +22,12 @@ strings the UI shows.
   "I don't have that information in my source pages" instead of a guess.
 - The UI shows **"Show retrieved chunks"** under each answer — the reviewer
   affordance (US-4 / S18) — so grounding is visible, not claimed.
+- **Conversation memory**: the chat keeps the last `MEMORY_MESSAGES` (10)
+  turns and, before retrieval, rewrites a follow-up that lacks a subject —
+  "what about its fees?" becomes "What is the expense ratio of HDFC Flexi Cap
+  Fund Direct Growth?" — showing a "resolved follow-up" note under the answer.
+  Best-effort and fail-open: no history, a missing key, or a network error all
+  fall back to the stateless pipeline (rag/memory.py).
 - Asks **safe refusal** for advice ("Should I buy…?"), performance ("best
   returns?"), and personal data (PAN inputs) — refused before any search runs.
 
@@ -72,7 +78,7 @@ The UI opens at `http://localhost:8501`.
 | S6 ≤ 3 sentences / S7 numbers grounded | **8/8** (live Groq) |
 | Refusals + PII (PRD §5.2/§5.3) | 8/8 + 3/3 refused, secret never echoed |
 | Rows 7–8 (corpus gap) | honest `NOT_IN_CORPUS` in live mode, never a guess |
-| Test suite | 240+ tests green, 1 honest xfail |
+| Test suite | 260+ tests green, 1 honest xfail |
 
 `sample_qa.md` has 8 verbatim live Q&A examples.
 

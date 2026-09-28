@@ -11,6 +11,10 @@ Serves the phase-5 pipeline behind a small chat interface:
     link on refusals,
   - a "Show retrieved chunks" expander per answer - the US-4 / S18 affordance
     that makes grounding visible to a reviewer,
+  - conversation memory: the last `config.MEMORY_MESSAGES` turns are passed to
+    the pipeline, and a follow-up like "what about its fees?" is rewritten
+    into a standalone question before retrieval, with a "resolved follow-up"
+    caption under the answer,
   - a friendly banner instead of a crash when GROQ_API_KEY is missing (C13)
     or when data/chroma/ is empty (the exact ingest command is printed).
 
@@ -54,10 +58,27 @@ def corpus_count() -> int:
         return -1
 
 
-def answer_question(question: str):
+def _memory_window(history: list[dict]) -> list[dict]:
+    """Prior turns normalised to [{"role", "content"}] and windowed.
+
+    The UI's assistant entries store the text under "text", so they are
+    normalised to "content" for the rewriter. The incoming question is NOT
+    included - it is passed to the rewriter separately - and turnovers that
+    produced no answer (no_key / generation_error) carry no useful context.
+    """
+    turns = []
+    for m in history:
+        if m.get("role") == "user":
+            turns.append({"role": "user", "content": m.get("content", "")})
+        elif m.get("status") not in {None, "no_key", "generation_error"}:
+            turns.append({"role": "assistant", "content": m.get("text", "")})
+    return turns[-config.MEMORY_MESSAGES:]
+
+
+def answer_question(question: str, history=None):
     """Run the phase-5 pipeline; fold its failure modes into safe UI states."""
     try:
-        ans = pipeline.answer(question)
+        ans = pipeline.answer(question, history=history)
     except generator.NoGroqKey as exc:
         return {
             "status": "no_key",
@@ -85,6 +106,7 @@ def answer_question(question: str):
         "link": ans.link,
         "chunks": list(ans.chunks),
         "narrowed_by": ans.narrowed_by,
+        "rewritten": ans.rewritten,
     }
 
 
@@ -143,9 +165,10 @@ def main() -> None:
 
     history = st.session_state.setdefault("history", [])
     if incoming:
+        prior_turns = _memory_window(history)
         history.append({"role": "user", "content": incoming})
         with st.spinner("Retrieving and answering…"):
-            history.append({"role": "assistant", **answer_question(incoming)})
+            history.append({"role": "assistant", **answer_question(incoming, prior_turns)})
 
     for msg in history:
         with st.chat_message(msg["role"]):
@@ -155,6 +178,8 @@ def main() -> None:
             status = msg.get("status", "answered")
             tone = _STATUS_TONE.get(status, "assistant")
             st.markdown(msg["text"])
+            if msg.get("rewritten"):
+                st.caption(f"resolved follow-up: *{msg['rewritten']}*")
             if msg.get("link"):
                 st.markdown(
                     f"**Source:** [{msg['link'].title}]({msg['link'].url})"
