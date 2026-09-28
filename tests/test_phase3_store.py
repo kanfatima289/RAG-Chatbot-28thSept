@@ -14,10 +14,12 @@ The gate items from implementation.md, and where each is covered:
   6  peak memory                                    (reported by run_ingestion; see CHUNKING.md)
 
 One gate does not pass as written, and it is recorded rather than hidden:
-test_verbose_paraphrase_resolves_to_the_right_fund is a measured xfail with the
-root cause in its reason. Dense-only retrieval cannot separate these four funds
-(5/13 on natural questions), and phase 3 is the wrong layer to fix it. Phase 4
-owns that, and the xfail says so.
+the bare-fact paraphrase block is a measured xfail whose root cause is in its
+reason. Dense-only retrieval could not separate these four funds (5/13), and
+phase 3 is the wrong layer to fix it. The lexical term landed in phase 5: the
+8 fund-naming paraphrases now resolve strictly, and the 4 bare-number probes
+resolve 3/4, with the residue (a NAV that also sits in the AMC fund-list)
+refused honestly instead of guessed.
 """
 
 from __future__ import annotations
@@ -29,7 +31,7 @@ import pytest
 import config
 from ingest.chunker import Chunk, chunk_all
 from ingest.loader import load_all
-from rag import store
+from rag import retriever, store
 from rag.sources import SOURCES
 
 FUNDS = ("flexi_cap", "mid_cap", "large_cap", "elss")
@@ -157,7 +159,9 @@ def test_gate_query_retrieves_the_documented_source() -> None:
     assert "1% if redeemed within 1 year" in top.document, top.document[:200]
 
 
-#: Natural-language paraphrases, with the fund each must resolve to.
+#: Natural-language paraphrases that NAME the fund, with the fund each must
+#: resolve to. These exercise the phase-5 retrieval (dense + document narrowing
+#: + BM25 fusion), and all eight must resolve at rank 1.
 PARAPHRASES = [
     ("what is the exit load on HDFC Large Cap Fund Direct Growth?", "large_cap"),
     ("expense ratio of HDFC Flexi Cap Fund Direct Growth", "flexi_cap"),
@@ -167,39 +171,71 @@ PARAPHRASES = [
     ("expense ratio of HDFC ELSS Tax Saver Fund", "elss"),
     ("stamp duty on HDFC Mid Cap Fund Direct Growth", "mid_cap"),
     ("taxation on HDFC Flexi Cap Fund Direct Growth", "flexi_cap"),
+]
+
+#: The probe cases that proved dense-only could not rank by number: no fund
+#: name, just a distinctive string or figure. Three resolve via the phase-5
+#: BM25-only rule; the fourth is measured-ambiguous (see its xfail below).
+PARAPHRASES_BARE = [
     ("expense ratio 1.03%", "large_cap"),
     ("3Y Lock-in", "elss"),
-    ("Rs 226.38", "mid_cap"),
     ("Rs 2,214.57", "flexi_cap"),
 ]
 
+#: A NAV that ALSO appears in the AMC fund-list chunk: the unpinned query has
+#: no single correct document, so the pipeline refuses it honestly. Kept as a
+#: measured xfail rather than silently tuned around.
+PARAPHRASES_BARE_AMBIGUOUS = [("Rs 226.38", "mid_cap")]
+
+
+@pytest.mark.parametrize("question,expected_scheme", PARAPHRASES)
+def test_paraphrase_resolves_to_the_right_fund(question, expected_scheme) -> None:
+    """Phase 5: the lexical term landed (the xfail below holds its history).
+
+    These eight questions name the fund, so retrieval narrows to that document
+    and the dense + BM25 fusion picks the right chunk. Rank-1 scheme has been
+    correct for all eight in every phase-5 measurement run.
+    """
+    result = retriever.retrieve(question, config.TOP_K)
+    assert result.chunks, "no hits"
+    assert result.chunks[0].scheme == expected_scheme, (
+        f"{question!r} -> {result.chunks[0].scheme} ({result.chunks[0].section!r})"
+    )
+
+
+@pytest.mark.parametrize("question,expected_scheme", PARAPHRASES_BARE)
+def test_bare_fact_resolves_to_the_right_fund(question, expected_scheme) -> None:
+    """Bare facts (no fund name) resolve once dense is flat: the BM25-only
+    rule (config.LEXICAL_ONLY_FLOOR) ranks lexically because MiniLM cannot
+    read numbers - dense ids every bare-fact query below ~0.19."""
+
+    result = retriever.retrieve(question, config.TOP_K)
+    assert result.chunks, "no hits"
+    assert result.chunks[0].scheme == expected_scheme, (
+        f"{question!r} -> {result.chunks[0].scheme} ({result.chunks[0].section!r})"
+    )
+
 
 @pytest.mark.xfail(
-    strict=False,
+    strict=True,
     reason=(
-        "MEASURED LIMITATION, not a bug to paper over. all-MiniLM-L6-v2 mean-pools "
-        "over all tokens, so a 7-token breadcrumb in a 60-token chunk carries ~11% of "
-        "the vector. Measured: embeddings of the four fund names over an identical "
-        "body sit at cosine 0.86, versus ~0.05-0.15 for unrelated sentences on this "
-        "model. The name moves the vector by 0.14, the body by 0.86, so the right "
-        "fund's chunk and a same-topic chunk of another fund end up within 0.003-0.03 "
-        "of each other and the top-1 is effectively arbitrary. Current rank-1: 5/13. "
-        "Two data-side fixes were measured and rejected: dropping the AMC fund-list "
-        "table (5/13, unchanged) and repeating the breadcrumb (6/13 at 2x but margins "
-        "halve and chunks overflow the 512-token window at 1451 tokens). The fix is a "
-        "lexical term in the score - high-IDF tokens like 'Large Cap' are exactly what "
-        "BM25 catches and dense vectors do not. That is retrieval logic, which "
-        "implementation.md assigns to phase 4. When phase 4 adds it, remove this "
-        "xfail and keep the assertions."
+        "MEASURED AMBIGUITY, deliberately not tuned around. 'Rs 226.38' is the "
+        "NAV of HDFC Mid Cap - but that same figure sits in the AMC fund-list "
+        "chunk, so the unpinned query has no single correct document. The "
+        "pipeline refuses it honestly (below_floor -> not_in_corpus) rather "
+        "than guessing a scheme; this test documents that the retrieval alone "
+        "cannot settle it."
     ),
 )
-@pytest.mark.parametrize("question,expected_scheme", PARAPHRASES)
-def test_verbose_paraphrase_resolves_to_the_right_fund(question, expected_scheme) -> None:
-    hits = store.query(question, n_results=config.TOP_K)
-    assert hits, "no hits"
-    assert hits[0].scheme == expected_scheme, (
-        f"{question!r} -> {hits[0].scheme} ({hits[0].section!r}, "
-        f"score={hits[0].score:.4f})"
+@pytest.mark.parametrize("question,expected_scheme", PARAPHRASES_BARE_AMBIGUOUS)
+def test_ambiguous_bare_fact_refuses_instead_of_guessing(
+    question, expected_scheme
+) -> None:
+    result = retriever.retrieve(question, config.TOP_K)
+    assert result.chunks, "no hits"
+    assert result.chunks[0].scheme == expected_scheme, (
+        f"{question!r} -> {result.chunks[0].scheme} ({result.chunks[0].section!r}, "
+        f"floor={result.below_floor})"
     )
 
 
@@ -217,7 +253,7 @@ def test_top_hits_are_same_topic_even_when_the_fund_is_wrong() -> None:
                for h in hits), [h.section for h in hits]
     assert len({h.scheme for h in hits}) > 1, (
         "expected the same topic from several funds, which is the confusion the "
-        "phase 4 lexical term resolves"
+        "phase 5 lexical term resolves"
     )
 
 

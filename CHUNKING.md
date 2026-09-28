@@ -170,9 +170,25 @@ index and records the gap:
 * `test_gate_query_retrieves_the_documented_source` passes, in the exact wording
   implementation.md's gate specifies (`exit load HDFC Large Cap` -> `large_cap`,
   score 0.3374 against 0.3288 for the runner-up).
-* `test_verbose_paraphrase_resolves_to_the_right_fund` is an explicit `xfail`
-  carrying the numbers and this analysis, so phase 4 inherits a failing test
-  rather than a forgotten one.
+* The verbose-paraphrase gap shipped as an explicit `xfail` in
+  `test_verbose_paraphrase_resolves_to_the_right_fund`.
+
+## Phase 5 outcome (the lexical term landed)
+
+The retrieval logic phase 5 put around this index resolved the recorded gap:
+
+* The 8 fund-naming paraphrase questions all resolve at rank 1
+  (`test_paraphrase_resolves_to_the_right_fund`, unmarked from xfail).
+* The 4 bare-fact probes (`3Y Lock-in`, `expense ratio 1.03%`, `Rs 2,214.57`,
+  `Rs 226.38`) resolve 3 by a dedicated BM25-only rule
+  (`config.LEXICAL_ONLY_FLOOR`); the fourth is recorded as a separate measured
+  xfail - that NAV also sits in the AMC fund-list chunk, so the unpinned query
+  has no single correct document and the pipeline refuses it honestly.
+* Number grounding (S7) is a post-generation check in `rag/postprocess.py` with
+  its own carry set `{2, 3, 4, 5, 10}`: "3Y Lock-in" must not trip "3 year",
+  while "1" is deliberately not carried (too ubiquitous to separate a true 1%
+  from a false one). MiniLM genuinely cannot read digits - see the phase-5
+  findings in `implementation.md`.
 
 ## What gets dropped, and why
 

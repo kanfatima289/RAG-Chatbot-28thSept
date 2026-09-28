@@ -142,10 +142,91 @@ EMBEDDINGS_PREVIEW_TXT = DATA_DIR / "embeddings_preview.txt"
 # --------------------------------------------------------------------------
 TOP_K = int(os.getenv("TOP_K", "5"))
 
-# PROVISIONAL - similarity (not distance) floor below which we answer
-# "not in this corpus" instead of guessing. Tune against the eval set in
-# phase 5 (gate step 10). Do not ship this value unmeasured.
-MIN_SCORE = float(os.getenv("MIN_SCORE", "0.25"))
+# MIN_SCORE - similarity floor for the "not in this corpus" path (S7).
+#
+# MEASURED IN PHASE 5, and the measurement changed what this number is for.
+#
+# It is tempting to read this as "the threshold that decides whether the corpus
+# can answer the question". It cannot do that. Measured over 35 questions the
+# corpus provably answers and 15 it provably cannot, the two score populations
+# overlap completely:
+#
+#     answerable     min 0.2241   median 0.3143   max 0.4752
+#     unanswerable   min 0.1577   median 0.2547   max 0.3695
+#
+# "book me a flight to goa" scores 0.3695, above 12 of the 35 answerable
+# questions. MiniLM is a *topic* model: it measures how similar two passages
+# feel, not whether the number you asked for is written down. IDF term
+# coverage and IDF term *absence* were both tried as replacements and overlap
+# just as badly - see CHUNKING.md and implementation.md phase 5.
+#
+# So this floor does one narrow job: catch gross topical mismatch, the case
+# where the question is about something this corpus has nothing on. 0.20 is
+# the highest value that refuses none of the 35 verified-answerable questions,
+# with margin. It is deliberately low, because a false refusal is the most
+# damaging bug this project can ship.
+#
+# Two further consequences of the measurement, both implemented in
+# rag/retriever.py and rag/postprocess.py:
+#
+#   1. The floor is applied ONLY to an unfiltered whole-corpus search. When
+#      the question names a scheme or the AMC, retrieval is narrowed to that
+#      document, and a low score within a correctly identified document is
+#      not evidence of absence - it is evidence the right *chunk* was not
+#      found. Applying the floor there refused verified-answerable questions.
+#   2. The real groundedness check is post-generation: every number in the
+#      final answer must appear in the retrieved context, or the answer is
+#      replaced with the "I don't have that information" path. That check is
+#      mechanical, so it promotes S7 from "manual verification" to a test.
+MIN_SCORE = float(os.getenv("MIN_SCORE", "0.20"))
+
+# RRF_K - the rank-fusion constant. The standard value from the reciprocal rank
+# fusion literature; it is not a tuned parameter. Its job is to damp the head
+# of the list so a single rank-1 result cannot dominate, and 60 is small
+# enough relative to a 5-item list to leave ordering intact.
+RRF_K = int(os.getenv("RRF_K", "60"))
+
+# BM25_K1, BM25_B - the two standard BM25 free parameters. k1 controls term
+# frequency saturation (1.2-2.0 is conventional), b controls how much the
+# length normalisation matters (0.75 is the conventional default). These are
+# library defaults rather than values fitted to this eval set, deliberately:
+# with 8 answerable questions any "tuned" value would be overfitting.
+BM25_K1 = float(os.getenv("BM25_K1", "1.5"))
+BM25_B = float(os.getenv("BM25_B", "0.75"))
+
+# DENSE_CANDIDATES - how many candidates each arm contributes to the fusion.
+# Larger than TOP_K so the fusion has something to reorder; 3x was enough for
+# every question measured, and the corpus is only 54 chunks.
+DENSE_CANDIDATES = int(os.getenv("DENSE_CANDIDATES", "3"))
+
+# Document narrowing. Both are conservative: they only fire on an explicit
+# scheme name or an explicit reference to HDFC Mutual Fund itself, and they
+# pin the SEARCH, never the answer - the fusion still chooses the chunk.
+RERANK_ENABLED = os.getenv("RERANK_ENABLED", "1").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
+# LEXICAL_ONLY_FLOOR - on an UNPINNED search, the dense-best score below which
+# the dense arm is treated as having no topic signal at all and BM25 ranks
+# alone. MEASURED IN PHASE 5: MiniLM reads numbers and terse fragments poorly,
+# so every bare-fact query ("3Y Lock-in", "Rs 2,214.57", "expense ratio 1.03%")
+# and every absent-fact query measures below ~0.19 dense, yet the lexical arm
+# is decisive on the former. 0.30 is the top of a measured stable window: any
+# value in 0.20-0.30 gives identical frozen eval (8/8 S1+S2), 24/24 held-out,
+# and the phase-3 paraphrase set ranges 10/12 -> 11/12 as the floor rises
+# (bare numbers resolve lexically). The corresponding floor rescues, below.
+LEXICAL_ONLY_FLOOR = float(os.getenv("LEXICAL_ONLY_FLOOR", "0.30"))
+
+# FLOOR_RESCUE_* - a measured exception to MIN_SCORE. An absent-fact question
+# ties BM25 across documents ("capital gains statement" -> ratio 1.00 across
+# three schemes' Tax chunks) so it stays below floor and refuses. A present
+# bare fact wins decisively ("3Y Lock-in" 7.58 vs 2.21) or scheme-consistently
+# ("Rs 2,214.57" top-2 both flexi_cap) and is rescued. Without this, the CLI
+# would refuse "3Y Lock-in" even though the corpus provably contains it.
+FLOOR_RESCUE_MIN_SCORE = float(os.getenv("FLOOR_RESCUE_MIN_SCORE", "3.0"))
+FLOOR_RESCUE_RATIO = float(os.getenv("FLOOR_RESCUE_RATIO", "1.4"))
 
 
 # --------------------------------------------------------------------------
@@ -224,6 +305,30 @@ MAX_SENTENCES = 3  # C5 / S6 - enforced in rag/postprocess.py
 FOOTER_PREFIX = "Last updated from sources:"
 
 DISCLAIMER = "Facts-only. No investment advice."
+
+# Groq call shape. The free tier rate-limits by requests per minute, and PRD R8
+# asks for a simple retry - so the retry is on 429 and 5xx only, with a short
+# backoff, and a hard cap on attempts so a live demo cannot hang.
+GROQ_TIMEOUT_S = float(os.getenv("GROQ_TIMEOUT_S", "20"))
+GROQ_MAX_ATTEMPTS = int(os.getenv("GROQ_MAX_ATTEMPTS", "2"))
+GROQ_BACKOFF_S = float(os.getenv("GROQ_BACKOFF_S", "1.5"))
+
+# Groundedness (S7). A number in the answer that appears nowhere in the
+# retrieved context is a fabricated number, and the corpus's figures are
+# distinctive enough (0.77%, 2,214.57, 1,08,324.55) that this catches the
+# failure mode gate step 10 is about.
+#
+# The exact rule - which small integers count as evidence - lives in
+# rag/postprocess.py as _GROUNDING_NUMBER_CARRY and was MEASURED in phase 5:
+# "3Y Lock-in" must not trip "3 year" (carry 3), while "1" is deliberately NOT
+# carried because it is ubiquitous ("1 year" slabs in every doc) and cannot
+# separate a true "1%" from a false one. The old GROUNDING_IGNORE list ("1".."5")
+# was the wrong semantics (ignore = blind spot) and is gone.
+GROUNDING_ENABLED = os.getenv("GROUNDING_ENABLED", "1").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 
 # --------------------------------------------------------------------------

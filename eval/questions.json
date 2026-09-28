@@ -40,7 +40,8 @@
       "expect_fact": "benchmark index name",
       "doc_id": "2",
       "scheme": "flexi_cap",
-      "grounding": "NIFTY 500 TRI"
+      "grounding": "NIFTY 500 Total Return Index",
+      "_note": "Verified in phase 5: the corpus text is 'NIFTY 500 Total Return Index', never the shorthand 'TRI'. Answers must use the corpus's own phrasing (see row 6). ELSS shares this benchmark."
     },
     {
       "id": 6,

@@ -155,6 +155,14 @@ Deliberately tiny:
 > the corpus's own phrasing. The phase 4 guard must accept "Very High Risk" and
 > must not invent a date it cannot cite.
 
+> **Rows 7–8 caveat (found in phase 5).** The pages behind Doc 1 publish neither
+> a "capital gains statement" guide nor a direct-vs-regular fee comparison —
+> both questions score zero hits in the clean corpus. The eval set therefore
+> records them as **not answerable** (`NOT_ANSWERABLE = {7, 8}` in
+> `eval/evaluate.py`): they must refuse honestly ("not in the corpus") rather
+> than invent a walkthrough, and their refusal is measured only in live mode,
+> where a stub cannot be honest about absence.
+
 ### 5.2 Out-of-scope — must refuse politely with an educational link
 
 | # | Question | Why refused |

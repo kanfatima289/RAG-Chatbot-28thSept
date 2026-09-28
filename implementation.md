@@ -258,6 +258,23 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 9. Warm p95 latency under 10 s (S13).
 10. Ask something genuinely absent from the corpus. Confirm it says so instead of inventing a plausible number — this is the failure mode that would embarrass you in a demo.
 
+### Findings from this phase
+
+**The frozen eval has two genuinely unanswerable rows, and they are recorded, not hidden.** Rows 7 ("download a capital gains statement") and 8 ("direct vs regular plan") of `eval/questions.json` have zero hits in the corpus — the pages publish neither. `eval/evaluate.py` carries `NOT_ANSWERABLE = {7, 8}`: they are excluded from S1/S2 and their honest refusal is measured behind `--live` (a stub cannot be honest about absence). This is the PRD §5.1 data gap, handled as refusal rather than invention.
+
+**The score floor is weak, so the real S7 defence is post-generation grounding.** Measured over 35 provably-answerable and 15 provably-unanswerable questions, the MiniLM score populations overlap completely (0.2241–0.4752 vs 0.1577–0.3695); "book me a flight to goa" scores 0.3695. `MIN_SCORE=0.20` (lowered from 0.25) only catches gross topical mismatch on unfiltered searches. The absent-fact rows 7/8 score ~0.30 — *above* the floor — so their honesty comes from the model saying don't-know plus `rag/postprocess.grounded`: every number in the answer must appear in the retrieved context, with a measured carry set `{2,3,4,5,10}` so "3Y Lock-in" → "3 year" passes while "1" stays uncovered (ubiquitous). Gate item 10 is this check, and `NOT_IN_CORPUS` is its output.
+
+**Retrieval final shape (all measured, all in `rag/retriever.py`):**
+- *Document narrowing*: explicit scheme name ⇒ BM25+dense fusion inside that document (S2's 8/8 depends on it); explicit AMC reference ("SEBI registration", "HDFC MF") ⇒ AMC overview. Held-out 21/24 → 24/24 with the AMC detector.
+- *Wide-BM25 union*: for unpinned searches BM25 runs over all 54 chunks and candidates = dense-15 ∪ lex-15, so a number-bearing chunk outside the dense top-15 can enter the fusion.
+- *BM25-only rule* (`LEXICAL_ONLY_FLOOR=0.30`): MiniLM measures below ~0.19 dense on every bare-fact query (`"3Y Lock-in"`, `"Rs 2,214.57"`), so its *ranks* there are noise. When an unpinned search's dense best falls below the floor, BM25 ranks alone. Frozen stays 8/8, held-out 24/24, paraphrase set 10/12 → 11/12.
+- *Floor rescue* (`FLOOR_RESCUE_MIN_SCORE=3.0`, `FLOOR_RESCUE_RATIO=1.4`): an absent fact ties BM25 *across* documents (row 7: ratio 1.00 over three schemes' Tax chunks) but a present bare fact wins decisively (3Y Lock-in 7.58 vs 2.21) or scheme-consistently — so a flat dense score alone refuses only when the lexical arm is also undecided.
+- *RRF tie-break is lexical-first*: the sum is symmetric under arm-rank swap (dense-1/lex-2 ≡ dense-2/lex-1); for single-value factual questions the literal term chunk is the answer ("lock-in period" fused-ties the Exit-load chunk whose definition contains the word "period"), so the tie re-sorts on `lex_rank`. Scheme/doc gates cannot move — the tie only reorders inside an already-correct document.
+
+**Measured results (recorded in `eval/evaluate.py`, reproduced by running it):** S1 Recall@5 8/8 and S2 8/8 over the 8 answerable rows; grounding strings 7/7; S3 determinism; S4–S7 8/8 in the default (stub) mode; held-out paraphrase set 24/24; 4-case bare-fact residue is one measured ambiguity (`Rs 226.38`, see the xfail in `tests/test_phase3_store.py`). `eval/evaluate.py --live` needs a `GROQ_API_KEY`; without one the app runs in stub mode (C13) and prints a friendly pointer instead of crashing (checked by `tests/test_pipeline.py`).
+
+**Live-generation numbers are still unmeasured** — `.env` `GROQ_API_KEY=` is empty, so the `--live` paths (and gate items 10's live honesty wording) are the one open item before phase 6.
+
 ---
 
 ## Phase 6 — UI

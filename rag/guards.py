@@ -280,7 +280,7 @@ def check_intent(question: str) -> Decision:
     if rule:
         # A personal-planning question that also names a fund is still a
         # refusal; the educational link points at that fund's page.
-        scheme = _named_scheme(question)
+        scheme = named_scheme(question)
         return Decision(
             ok=False,
             status=Status.REFUSED_ADVICE,
@@ -322,11 +322,12 @@ def check_intent(question: str) -> Decision:
 
 
 # ---------------------------------------------------------------------------
-# Scheme detection - used only to pick which page to link a refusal to.
+# Scheme detection - picks which page to link a refusal to, and which document
+# the retriever is allowed to search (architecture 3.6).
 # ---------------------------------------------------------------------------
 # Ordered longest-first: "tax saver" must win over a bare "tax", and
 # "flexi cap" before "cap" so a partial name never shadows a full one.
-_SCHEME_PATTERNS: tuple[tuple[str, str], ...] = (
+SCHEME_PATTERNS: tuple[tuple[str, str], ...] = (
     ("elss", r"(?i)\b(elss|tax\s+saver)\b"),
     ("flexi_cap", r"(?i)\bflexi\s*cap\b"),
     ("mid_cap", r"(?i)\bmid[\s-]?cap\b"),
@@ -334,8 +335,20 @@ _SCHEME_PATTERNS: tuple[tuple[str, str], ...] = (
 )
 
 
-def _named_scheme(question: str) -> Optional[str]:
-    for scheme, pattern in _SCHEME_PATTERNS:
+def named_scheme(question: str) -> Optional[str]:
+    """Which of the four schemes the question names, or None.
+
+    Public because the retriever uses the *same* decision to narrow the search
+    (architecture 3.6). Two copies of this table would be one bug waiting to
+    happen: the guard would refuse and link one fund while the retriever
+    searched another.
+
+    Note this is a name match, not a comprehension test. It deliberately does
+    NOT fire on "Which HDFC schemes are covered?" or "What is the difference
+    between direct and regular plan?" - neither names one scheme, and
+    narrowing to a single document there would be wrong.
+    """
+    for scheme, pattern in SCHEME_PATTERNS:
         if re.search(pattern, question):
             return scheme
     return None
@@ -492,7 +505,7 @@ def not_in_corpus(question: str) -> Decision:
     Links the named scheme's page if the question named one, so the user gets
     the real document rather than a generic apology.
     """
-    scheme = _named_scheme(question)
+    scheme = named_scheme(question)
     return Decision(
         ok=False,
         status=Status.NOT_IN_CORPUS,
