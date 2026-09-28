@@ -38,6 +38,7 @@ import argparse
 import json
 import re
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -58,6 +59,9 @@ EVAL = json.loads((ROOT / "eval" / "questions.json").read_text(encoding="utf-8")
 #: NOT_IN_CORPUS, never a guess. Row 9 (schemes covered) has no numeric
 #: grounding but IS answerable, so "grounding is None" is NOT the discriminator.
 NOT_ANSWERABLE = {7, 8}
+
+#: Seconds to pause between live-generation rows (free-tier flakiness is real).
+_LIVE_PACE_S = 0.75
 
 
 # --------------------------------------------------------------------------
@@ -186,6 +190,11 @@ def section_pipeline(live: bool, verbose: bool) -> tuple[bool, list[str]]:
     deferred: list[str] = []
     for row in EVAL["in_scope"]:
         a = pipeline.answer(row["question"], call=call)
+        if live:
+            # Free-tier flakiness is real (measured: empty completions under
+            # rapid successive calls). Pacing the eval keeps the measurement
+            # from tripping the very limit it is observing.
+            time.sleep(_LIVE_PACE_S)
         if row["id"] in NOT_ANSWERABLE:
             # Rows 7 and 8: the corpus cannot answer them. The stub *always*
             # answers, so stub mode defers the honesty check to live mode,

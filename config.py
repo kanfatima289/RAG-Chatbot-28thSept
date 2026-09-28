@@ -34,7 +34,13 @@ CHUNKS_TXT = CHUNKS_DIR / "chunks.txt"
 # Secrets
 # --------------------------------------------------------------------------
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+# GROQ_MODEL is fetched per call (generator._real_client reads config each
+# time), so a demo can switch models without restarting. "llama-3.1-8b-instant"
+# was the phase-5 default; the key in use serves only the open-model set, and
+# openai/gpt-oss-20b was measured best of the available chat models (clear
+# prose, keeps the [n] citation shape, honest "not in corpus" on absent rows).
+# qwen/qwen3.8-27b also works but echoes chunk text verbatim more.
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 
 def has_groq_key() -> bool:
@@ -298,8 +304,14 @@ if CHUNK_OVERLAP >= CHUNK_SIZE:
 # --------------------------------------------------------------------------
 # Generation
 # --------------------------------------------------------------------------
-# Small on purpose: bounds latency (S13) and free-tier cost (C12, R8).
-MAX_TOKENS = 200
+# MAX_TOKENS bounds latency (S13) and free-tier cost (C12, R8) - but it must
+# leave room for REASONING. Measured live (phase 5): openai/gpt-oss-20b is a
+# reasoning model; easy questions spend 52-56 tokens reasoning, but "What is
+# the riskometer category...?" (a term the corpus never uses) consumed the
+# whole 200-token budget and returned an EMPTY completion. 512 keeps the
+# 3-sentence answer cap - enforced in postprocess, not here - while letting
+# the model finish thinking before it writes.
+MAX_TOKENS = 512
 MAX_SENTENCES = 3  # C5 / S6 - enforced in rag/postprocess.py
 
 FOOTER_PREFIX = "Last updated from sources:"
@@ -307,10 +319,12 @@ FOOTER_PREFIX = "Last updated from sources:"
 DISCLAIMER = "Facts-only. No investment advice."
 
 # Groq call shape. The free tier rate-limits by requests per minute, and PRD R8
-# asks for a simple retry - so the retry is on 429 and 5xx only, with a short
-# backoff, and a hard cap on attempts so a live demo cannot hang.
+# asks for a simple retry - so the retry is on 429, 5xx, transport errors and
+# EMPTY completions (measured live: the free tier intermittently returns a
+# blank turn under rapid calls), with a short backoff, and a hard cap on
+# attempts so a live demo cannot hang.
 GROQ_TIMEOUT_S = float(os.getenv("GROQ_TIMEOUT_S", "20"))
-GROQ_MAX_ATTEMPTS = int(os.getenv("GROQ_MAX_ATTEMPTS", "2"))
+GROQ_MAX_ATTEMPTS = int(os.getenv("GROQ_MAX_ATTEMPTS", "3"))
 GROQ_BACKOFF_S = float(os.getenv("GROQ_BACKOFF_S", "1.5"))
 
 # Groundedness (S7). A number in the answer that appears nowhere in the

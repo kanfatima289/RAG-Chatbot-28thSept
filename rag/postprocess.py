@@ -42,6 +42,10 @@ from rag.sources import SCHEME_AMC_OVERVIEW, Source, for_scheme
 log = logging.getLogger(__name__)
 
 _REF = re.compile(r"\[(\d+)\]")
+#: Some models emit full-width citation brackets `【1】` (measured with
+#: openai/gpt-oss-20b). Normalise them to ASCII before any citation logic, so
+#: resolution, stripping and dedupe all see one bracket shape.
+_FULLWIDTH_REF = re.compile(r"【(\d+)】")
 #: The model is told to answer "I don't have that information in my source
 #: pages." when the context lacks the fact; this recognises that honest answer
 #: and maps it onto the S7 status so the CL I/UI render a refusal, not a
@@ -79,6 +83,10 @@ def _numbers(text: str) -> set[str]:
     return out
 
 
+def _normalize_citations(text: str) -> str:
+    return _FULLWIDTH_REF.sub(r"[\1]", text)
+
+
 def resolve_citation(
     draft: str, chunks: list[ScoredChunk]
 ) -> Optional[ScoredChunk]:
@@ -87,10 +95,11 @@ def resolve_citation(
     First-in-text, not last, because the opening fact is the one the answer
     hangs on and a trailing "[2] [3]" courtesy reference is where models pad.
     Falls back to the highest-scored chunk when there is no usable reference.
+    Full-width `【n】` is normalised to `[n]` first (measured: gpt-oss emits it).
     """
     if not chunks:
         return None
-    for m in _REF.finditer(draft):
+    for m in _REF.finditer(_normalize_citations(draft)):
         n = int(m.group(1))
         if 1 <= n <= len(chunks):
             return chunks[n - 1]
@@ -99,7 +108,7 @@ def resolve_citation(
 
 def strip_references(text: str) -> str:
     """Remove remaining `[n]` markers - the citation is injected once below."""
-    return _REF.sub(" ", text).strip()
+    return _REF.sub(" ", _normalize_citations(text)).strip()
 
 
 def looks_like_dont_know(text: str) -> bool:

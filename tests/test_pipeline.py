@@ -94,6 +94,16 @@ def test_stray_bracket_references_are_stripped() -> None:
     assert len(_urls(a.message)) == 1
 
 
+def test_full_width_citation_brackets_are_normalised() -> None:
+    # Measured: openai/gpt-oss-20b emitted 【1】 on this corpus. It must be
+    # resolved to the same registry URL as [1], and never leak into the reply.
+    a = pipeline.answer(FLEXI_Q, call=stub("The expense ratio is 0.77%【1】."))
+    assert a.status == Status.ANSWERED
+    assert "【" not in a.message and "】" not in a.message
+    assert "[" not in a.message and "]" not in a.message
+    assert _urls(a.message) == [BY_SCHEME["flexi_cap"].url]
+
+
 def test_dont_know_draft_maps_to_not_in_corpus() -> None:
     a = pipeline.answer(
         FLEXI_Q, call=stub("I don't have that information in my source pages.")

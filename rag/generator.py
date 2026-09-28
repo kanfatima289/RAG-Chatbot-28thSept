@@ -53,6 +53,11 @@ def _is_retryable(exc: BaseException) -> bool:
     return status is None
 
 
+def _backoff(attempt: int) -> None:
+    """Exponential backoff for a retried attempt, bounded by the attempt cap."""
+    time.sleep(config.GROQ_BACKOFF_S * (2 ** (attempt - 1)))
+
+
 def _real_client():
     from groq import Groq  # imported lazily: nothing fails when groq is absent
 
@@ -114,24 +119,40 @@ def generate(
                 timeout=config.GROQ_TIMEOUT_S,
             )
             content = (completion.choices[0].message.content or "").strip()
-            if not content:
-                raise GenerationError("Groq returned an empty completion")
-            if attempt > 1:
-                log.info("groq answered after %d attempts", attempt)
-            return content
         except GenerationError:
             raise
         except Exception as exc:  # noqa: BLE001 - the SDK raises many types
             last_error = exc
             if not _is_retryable(exc) or attempt >= config.GROQ_MAX_ATTEMPTS:
                 break
-            sleep = config.GROQ_BACKOFF_S * (2 ** (attempt - 1))
+            _backoff(attempt)
             log.warning(
-                "groq attempt %d failed (%s); retrying in %.1fs",
+                "groq attempt %d failed (%s); retrying",
                 attempt,
                 type(exc).__name__,
-                sleep,
             )
-            time.sleep(sleep)
+            continue
+
+        if content:
+            if attempt > 1:
+                log.info("groq answered after %d attempts", attempt)
+            return content
+
+        # An empty completion is either a provider hiccup or (measured) a
+        # reasoning model exhausting its generation budget on a hard question.
+        # Retry it like a 5xx, carrying the finish_reason so 'length' vs
+        # 'content_filter' is visible in the final error; a model that is
+        # *consistently* empty still raises after the attempt cap.
+        reason = getattr(completion.choices[0], "finish_reason", None)
+        last_error = GenerationError(
+            f"Groq returned an empty completion (finish_reason={reason!r})"
+        )
+        if attempt < config.GROQ_MAX_ATTEMPTS:
+            _backoff(attempt)
+            log.warning(
+                "groq attempt %d returned empty (finish_reason=%r); retrying",
+                attempt,
+                reason,
+            )
 
     raise GenerationError(f"Groq request failed after {config.GROQ_MAX_ATTEMPTS} attempts") from last_error

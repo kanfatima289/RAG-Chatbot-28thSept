@@ -273,7 +273,10 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 
 **Measured results (recorded in `eval/evaluate.py`, reproduced by running it):** S1 Recall@5 8/8 and S2 8/8 over the 8 answerable rows; grounding strings 7/7; S3 determinism; S4–S7 8/8 in the default (stub) mode; held-out paraphrase set 24/24; 4-case bare-fact residue is one measured ambiguity (`Rs 226.38`, see the xfail in `tests/test_phase3_store.py`). `eval/evaluate.py --live` needs a `GROQ_API_KEY`; without one the app runs in stub mode (C13) and prints a friendly pointer instead of crashing (checked by `tests/test_pipeline.py`).
 
-**Live-generation numbers are still unmeasured** — `.env` `GROQ_API_KEY=` is empty, so the `--live` paths (and gate items 10's live honesty wording) are the one open item before phase 6.
+**Measured live (Groq, `openai/gpt-oss-20b`, free tier):** `python -m eval.evaluate --live` is green — rows 7 and 8 come back NOT_IN_CORPUS from the model's own honesty (no invented walkthrough or fee table), S4–S7 8/8, refusals and PII 8/8. Two live-only findings, both fixed:
+
+- **`MAX_TOKENS` 200 → 512.** gpt-oss is a *reasoning* model; easy questions spend 52–56 tokens reasoning, but the "riskometer" row (a term absent from the corpus, so the model thinks harder) exhausted the whole 200-token budget and returned an **empty completion**. The ≤3-sentence cap is enforced in postprocess, so a larger generation budget is free.
+- **Empty completions are retried** like 429/5xx (`GROQ_MAX_ATTEMPTS=3`), carrying `finish_reason` for diagnosis; and `--live` paces rows to stay inside the free-tier request limit. The model switched from the unavailable `llama-3.1-8b-instant` to `openai/gpt-oss-20b` (the best of what this key can reach; qwen/qwen3.8-27b also works). Full-width citation brackets `【1】` from that model are normalised to `[1]` in `rag/postprocess.py`.
 
 ---
 

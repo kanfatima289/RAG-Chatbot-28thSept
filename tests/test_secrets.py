@@ -88,7 +88,12 @@ def test_env_example_carries_no_key() -> None:
 
 def test_env_example_groq_model_is_a_real_model_id() -> None:
     model = _read_env(ENV_EXAMPLE)["GROQ_MODEL"]
-    assert model.startswith("llama-"), f"unexpected GROQ_MODEL {model!r}"
+    # Verified to answer this corpus on the current key (phase 5 live run):
+    # an OpenAI open-model or a Qwen family id. Anything else the key later
+    # permits can be added when it has been measured here, not before.
+    assert model.startswith(("llama-", "openai/gpt-oss", "qwen/")), (
+        f"unexpected GROQ_MODEL {model!r}"
+    )
 
 
 def test_env_example_keeps_every_tunable_in_step_with_config() -> None:
@@ -212,19 +217,37 @@ def test_missing_key_is_a_banner_not_a_crash() -> None:
     assert config.has_groq_key() is bool(config.GROQ_API_KEY.strip())
 
 
-def test_local_env_file_has_no_key() -> None:
-    """This machine has no key yet, which is fine - as long as it is empty.
+def test_local_env_key_is_never_tracked() -> None:
+    """A key set in the local `.env` is the deliberate live state (phase 5+).
 
-    Not a rule about secrets, a rule about *this* checkout: phase 5 needs the
-    key set deliberately, and a stray value here is how a wrong key gets used.
+    The invariant is not "no key exists" - the demo needs one - it is that a
+    key can never be committed. `test_env_is_ignored_by_git` proves git
+    ignores `.env` outright; this closes the one remaining route, a forced
+    `git add`, by checking a key-shaped value never lands in tracked content.
     """
     if not ENV.is_file():
         pytest.skip("no local .env")
     value = re.search(r"(?m)^GROQ_API_KEY\s*=\s*(\S*)", ENV.read_text("utf-8"))
-    if value is None:
-        pytest.skip("GROQ_API_KEY not present in .env")
-    assert not KEY_SHAPED.search(value.group(1)), (
-        "a key is set in .env; that is expected before phase 5 but never committed"
+    if value is None or not KEY_SHAPED.search(value.group(1)):
+        pytest.skip("no key set in local .env - nothing to guard")
+    # The key exists locally: prove git cannot take it, both ways.
+    result = subprocess.run(
+        ["git", "check-ignore", "-v", ".env"],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, ".env is not ignored by git"
+    status = subprocess.run(
+        ["git", "status", "--porcelain", "--", ".env"],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert status.stdout.strip() == "", (
+        f"tracked .env changes: {status.stdout.strip()!r} - a key is being staged"
     )
 
 
