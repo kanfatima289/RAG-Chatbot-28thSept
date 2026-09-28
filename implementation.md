@@ -22,7 +22,7 @@ Two rules that matter more than the phase list:
 | Phase | Produces | Unblocks | Gate |
 |---|---|---|---|
 | 1. Project setup | Env, repo, config, corpus registry | everything | `python -c` imports, `git check-ignore .env` |
-| 2. Loading + chunking | `data/clean/`, `data/chunks.txt` | phase 3 | 5 clean files + hand-read chunk dump |
+| 2. Loading + chunking | `data/clean/`, `data/chunks/chunks.txt` | phase 3 | 5 clean files + hand-read chunk dump |
 | 3. Embedding + store | `data/chroma/` | phase 5 retrieval | retrieve a known fact by hand |
 | 4. Guardrails | `rag/guards.py` + tests | phase 5 generation | `pytest tests/test_guards.py` green |
 | 5. Retrieval + LLM | `rag/pipeline.py`, eval report | phase 6 | Recall@5 ≥ 9/10, 0 fabricated links |
@@ -109,33 +109,35 @@ Run these; all must pass.
 | `ingest/run_ingestion.py` | CLI entry point, `--offline` flag |
 | `data/clean/*.txt` | 5 cleaned files — **checked into the repo** (offline fallback, R2) |
 | `data/raw/*.html` | Cached HTML — gitignored |
-| `data/chunks.txt` | **Required deliverable (C6)** — every chunk, readable |
+| `data/chunks/chunks.txt` | **Required deliverable (C6)** — every chunk, readable |
 | `CHUNKING.md` | Final rationale: strategy, size, overlap, metadata, why it fits this data |
 
 ### What this phase does
 
 **Step 2a — Inspect before you build (the C6 gate).** Load the 5 pages and *look at them*:
 - Print the heading inventory and section lengths per page.
-- Confirm the four exit-load slabs for Large Cap land in four separate, individually-answerable chunks.
+- Confirm the exit-load rows land in separately-answerable chunks. *(Plan guessed four for Large Cap; it publishes three. Verify against the page, not against this line.)*
 - Check how much "Direct Growth vs Regular" boilerplate repeats across pages, and decide whether to strip it.
-- Confirm each fact (expense ratio, min SIP, riskometer, benchmark) has a distinct labelled section rather than living in a blob of prose.
+- Confirm each fact (expense ratio, min SIP, risk level, benchmark) has a distinct labelled section rather than living in a blob of prose.
 
-**Step 2b — Freeze parameters.** Set `CHUNK_SIZE`, `CHUNK_OVERLAP`, `MIN_SIZE` in `config.py` from what you observed. Provisional starting point is ~400 words / ~80 overlap / ~40 min.
+**Step 2b — Freeze parameters.** Set `CHUNK_SIZE`, `CHUNK_OVERLAP`, `MIN_SIZE` in `config.py` from what you observed. Frozen at **400 words / 80 overlap / 60 min** — see `CHUNKING.md` for the arithmetic.
 
 **Step 2c — Build the loader.** Respect `robots.txt` (verified: our 5 URLs are allowed), use an honest User-Agent, cache raw HTML, and always write `data/clean/` — that snapshot is what makes the demo survive a blocked fetch and what Render ingests from.
 
-**Step 2d — Build the chunker.** Split on real headings, prepend the heading to the embedded text, emit the `Chunk` record from §8.1, and dump everything to `data/chunks.txt`.
+**Step 2d — Build the chunker.** Split on real headings, prepend the heading to the embedded text, emit the `Chunk` record from §8.1, and dump everything to `data/chunks/chunks.txt`.
 
 ### Gate — verify before Phase 3
 
-1. `python -m ingest.run_ingestion` completes and writes 5 files to `data/clean/`.
-2. **Open each clean file and read it.** Confirm the facts you need are actually present as text — expense ratio, exit load, min SIP, ELSS lock-in, riskometer, benchmark. If a fact is missing, it is either not on the page or was stripped as boilerplate. Resolve this now; phase 5 cannot answer what phase 2 dropped.
-3. **Open `data/chunks.txt` and read at least 20 chunks.** This is the C6 deliverable and the single highest-leverage review in the whole project.
-4. Confirm each chunk carries `source_url`, `scheme`, `heading` (architecture §8.1).
-5. Confirm no chunk is a navigation menu, cookie banner, or "log in" fragment.
-6. Confirm the four exit-load slabs are in four distinct chunks.
-7. Confirm `python -m ingest.run_ingestion --offline` reproduces identical output with no network — this is the path Render will use.
-8. `CHUNKING.md` states the final numbers and the reason each was chosen.
+**Automated:** `python -m pytest tests/test_phase2_corpus.py` — 23 tests, offline, no network. Everything below is asserted there; the hand checks are marked ✔ done.
+
+1. ✔ `python -m ingest.run_ingestion` completes and writes 5 files to `data/clean/`.
+2. ✔ **Open each clean file and read it.** The facts are present as text — expense ratio, exit load, min SIP, ELSS lock-in, risk level, benchmark. If a fact is missing, it is either not on the page or was stripped as boilerplate. Resolve this now; phase 5 cannot answer what phase 2 dropped.
+3. ✔ **Open `data/chunks/chunks.txt` and read at least 20 chunks.** This is the C6 deliverable and the single highest-leverage review in the whole project.
+4. ✔ Each chunk carries `url`, `scheme`, `section`, `doc_id`, `index` (architecture §8.1).
+5. ✔ No chunk is a navigation menu, cookie banner, or "log in" fragment.
+6. ~~The four exit-load slabs are in four distinct chunks.~~ **Corrected in phase 2:** the plan guessed four. Large Cap publishes **three** dated rows (08 May 2015, 16 Feb 2015, 01 Jan 2013), and ELSS publishes `Nil` in a different section from the equity funds' `1%`. Both now assert on the real phrasing, including a negative test that ELSS is never given a 1% exit load.
+7. ✔ `python -m ingest.run_ingestion --offline` reproduces a byte-identical chunk dump with no network — this is the path Render will use. Asserted as a lossless round trip of `data/clean/`, not just a count match.
+8. ✔ `CHUNKING.md` states the final numbers and the reason each was chosen.
 
 > **If retrieval quality disappoints later, this is the first place to look.** Not the model, not the prompt.
 

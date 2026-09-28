@@ -73,7 +73,7 @@ This exact list is also the deliverable "Source list (CSV/MD)" — single source
 | **Chunk** | Section-aware, not naive fixed-window. Split on natural headings (expense ratio, exit load, benchmark, riskometer, FAQ items) with a fixed-size fallback. Chunk size/overlap to be **proposed after inspecting real page data** and documented with reasoning (see §8, Constraint C6). |
 | **Embed** | `sentence-transformers/all-MiniLM-L6-v2`, 384-dim, CPU, no API key. |
 | **Store** | ChromaDB, persisted to disk, one collection. Ingestion runs once, not on every restart. |
-| **Inspectability** | Every chunk written to a human-readable `data/chunks.txt` (id, source URL, section heading, text) so the chunking decision can be reviewed. **Required deliverable.** |
+| **Inspectability** | Every chunk written to a human-readable `data/chunks/chunks.txt` (id, source URL, section heading, text) so the chunking decision can be reviewed. **Required deliverable.** |
 
 ### 3.3 Query pipeline
 
@@ -141,13 +141,19 @@ Deliberately tiny:
 | 3 | What is the minimum SIP amount for HDFC Mid Cap Fund Direct Growth? | Min SIP ₹ amount | Doc 3 |
 | 4 | What is the lock-in period for HDFC ELSS Tax Saver? | 3 years, with the statutory exceptions noted | Doc 5 |
 | 5 | What is the benchmark of HDFC Flexi Cap Fund? | Benchmark index name | Doc 2 |
-| 6 | What is the riskometer category of HDFC Mid Cap Fund? | Riskometer level + as-of date | Doc 3 |
+| 6 | What is the riskometer category of HDFC Mid Cap Fund? | Risk level — corpus publishes `Very High Risk` | Doc 3 |
 | 7 | How do I download a capital gains statement? | Step-by-step from the guide | Doc 1 |
 | 8 | What is the difference between direct and regular plan? | Fee-structure difference | Doc 1 |
 | 9 | Which HDFC schemes are covered in this assistant? | The 4 in-scope schemes | Doc 1 |
 | 10 | What is the NAV of HDFC Large Cap Fund? (as of source date) | NAV value + date | Doc 4 |
 
 > The 3 example questions surfaced in the UI should be drawn from rows 1, 2, and 4 — the most distinctive fact types (fee, load, lock-in).
+
+> **Row 6 wording caveat (found in phase 2).** These pages never use the word
+> "riskometer". They publish a *level* — `Very High Risk` — with no as-of date,
+> so the question stays (a user will ask it) but the answer must come back in
+> the corpus's own phrasing. The phase 4 guard must accept "Very High Risk" and
+> must not invent a date it cannot cite.
 
 ### 5.2 Out-of-scope — must refuse politely with an educational link
 
@@ -295,7 +301,7 @@ These are real and need to be designed around, not discovered at deploy time.
 3. **README** — setup steps, scope (AMC + 4 schemes), known limits.
 4. **Sample Q&A** — `sample_qa.md`, 5–10 queries with the assistant's answers + links.
 5. **Disclaimer snippet** — the exact facts-only, no-advice string used in the UI.
-6. **Chunk dump** — `data/chunks.txt` (required by C6) and a short written chunking rationale (strategy, size, overlap, metadata, why it fits this data).
+6. **Chunk dump** — `data/chunks/chunks.txt` (required by C6) and a short written chunking rationale (strategy, size, overlap, metadata, why it fits this data).
 
 ---
 

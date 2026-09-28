@@ -79,7 +79,7 @@ The single source of truth for what the assistant is allowed to cite.
 - Section-aware: splits on real document headings (expense ratio, exit load, benchmark, riskometer, statement guide, FAQ items) rather than a blind fixed window, with a fixed-size fallback for unstructured prose.
 - Prepends `heading` to the embedded text (PRD R4) — finance pages are full of near-identical numeric fields whose meaning lives in the heading.
 - Emits the `Chunk` record defined in §7.
-- Writes `data/chunks.txt` — id, source URL, heading, text, one blank line between chunks. **Required deliverable (C6).**
+- Writes `data/chunks/chunks.txt` — id, source URL, heading, text, one blank line between chunks. **Required deliverable (C6).**
 - Parameters (`size`, `overlap`, `min_size`) are config-driven and set by the design gate in §6.
 - Satisfies: C6, S18, R4.
 
@@ -190,7 +190,7 @@ sources.py   (5 approved URLs, PRD 3.1)
   ┌───────────┐
   │  Chunker  │
   └───────────┘  ▶  ────────────     section-aware split, heading prepended
-                    ────────────     data/chunks.txt     human-readable (deliverable 6)
+                  ─────────────     data/chunks/chunks.txt  human-readable (deliverable 6)
      │
      ▼
   ┌───────────┐
@@ -361,23 +361,35 @@ PRD C6 requires the chunking strategy to be **proposed after inspecting the real
 
 The unit of ingestion, storage, and citation.
 
+As built in phase 2 (`ingest/chunker.py`). The `Chunk` is a flat dataclass;
+the `metadata.` prefix below is the Chroma shape phase 3 writes it into.
+
 | Field | Type | Example / notes |
 |---|---|---|
-| `id` | `str` | `sha256(doc_id + heading + ordinal)[:16]` — stable across re-ingest |
-| `text` | `str` | Chunk body, cleaned |
-| `embedded_text` | `str` | `f"{heading}\n{text}"` — what actually gets embedded |
-| `metadata.doc_id` | `str` | `1`–`5` per PRD §3.1 |
-| `metadata.source_url` | `str` | Approved URL from the registry |
-| `metadata.scheme` | `str` | `amc_overview` / `flexi_cap` / `mid_cap` / `large_cap` / `elss` |
-| `metadata.heading` | `str` | Section heading, may be `""` for prose |
-| `metadata.chunk_index` | `int` | Ordinal within the document |
-| `metadata.ingested_at` | `str` | ISO date — source of the "Last updated" footer |
+| `index` | `int` | Global ordinal, `0`–`48`. Contiguous; the citation the model emits is this number. |
+| `doc_id` | `str` | `1`–`5` per PRD §3.1 |
+| `scheme` | `str` | `amc_overview` / `flexi_cap` / `mid_cap` / `large_cap` / `elss` |
+| `url` | `str` | Approved URL from the registry — never composed by the model |
+| `title` | `str` | Page title, e.g. `HDFC Mid Cap Fund - Direct Growth` |
+| `section` | `str` | Section heading, `, `-joined when `_merge_small` groups several. `Key facts` is synthetic. |
+| `text` | `str` | What gets embedded and cited: breadcrumb + body, whitespace-collapsed |
+| `body` | `str` | `text` minus the breadcrumb. Kept so merging can drop member breadcrumbs without re-parsing. |
+| `n_merged` | `int` | How many undersized sections this chunk absorbed |
+| `warnings` | `list[str]` | e.g. `over budget: 413 words` — surfaced in the dump, never embedded |
+
+Phase 3 derives the Chroma `id` as `sha256(url + section + text)[:16]` at store
+time, so it is stable across re-ingest *and* changes when the content changes —
+which is what forces a rebuild. `ingested_at` is stamped at store time from the
+`data/clean/` file mtime, not at chunk time, so it dates the source snapshot.
 
 ### 8.2 Chroma collection
 
 - **name:** `mf_faq_{hash8}` where `hash8 = sha256(clean_texts + chunk_params)[:8]`
-- **metadata:** `{"hnsw:space": "cosine"}` (configured once at collection creation)
-- **stored:** `id`, `document` (= `embedded_text`), `embedding` (384-dim), `metadata`
+- **distance:** cosine, set once at creation via the **1.x** API —
+  `create_collection(name, configuration={"hnsw": {"space": "cosine"}})`.
+  The 0.4-era `metadata={"hnsw:space": "cosine"}` form is gone in chromadb
+  1.5.9 and raises.
+- **stored:** `id`, `document` (= `text`), `embedding` (384-dim), `metadata`
 
 ### 8.3 `Answer` object (UI-facing)
 
@@ -448,7 +460,8 @@ rag-chatbot/
 │   │   └── 5_elss.txt
 │   ├── raw/                        # gitignored — cached HTML
 │   │   └── *.html
-│   ├── chunks.txt                  # ✔ checked in — required deliverable (C6)
+│   ├── chunks/                     # ✔ checked in — required deliverable (C6)
+│   │   └── chunks.txt              #   every chunk, numbered, for hand review
 │   └── chroma/                     # gitignored — persisted index (C8)
 │
 └── tests/
@@ -549,7 +562,7 @@ Five commands, satisfying S15.
 1. **Design gate** — fetch/clean the 5 pages, inspect headings, freeze chunk params (§6). Required by C6 *before* code.
 2. Corpus registry + `sources.md` / `sources.csv`.
 3. Loader + `ingest/loader.py` → produce `data/clean/`.
-4. Chunker → `data/chunks.txt`. **Review the chunk dump by hand.**
+4. Chunker → `data/chunks/chunks.txt`. **Review the chunk dump by hand.**
 5. Embedder + Store → `data/chroma/`.
 6. Retriever + eval harness → measure Recall@5 (S1) and tune `MIN_SCORE`.
 7. Guards G1/G2 + unit tests.
