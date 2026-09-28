@@ -1,0 +1,6 @@
+Placeholder so git tracks the directory.
+
+The 5 cleaned source files land here in phase 2 and ARE committed on purpose:
+they are the offline fallback that keeps the demo working when a live fetch
+fails (R2), and they are what Render ingests from, since a free container has
+an ephemeral filesystem.

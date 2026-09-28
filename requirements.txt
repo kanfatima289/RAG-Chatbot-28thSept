@@ -1,0 +1,34 @@
+# RAG FAQ Assistant - Python dependencies
+#
+# Lower bounds verified against PyPI on 2026-09-28. Not exact-pinned, because
+# this environment has no working Python yet (see implementation.md Phase 1,
+# gate step 1) and an untested exact pin is worse than a floor.
+#
+# Requires Python 3.11+ (onnxruntime needs >=3.11).
+
+# --- ingestion (phase 2) ---
+httpx>=0.28.1
+beautifulsoup4>=4.15.0
+
+# --- embeddings: local, no API key (phase 3) ---
+sentence-transformers>=6.1.0
+# Preferred embedding backend. Shares the onnxruntime that chromadb already
+# installs, which keeps peak RSS low enough for Render's 512 MB (R7).
+onnxruntime>=1.30.0
+
+# --- vector store (phase 3) ---
+# NOTE: this resolves to chromadb 1.x, not 0.5.x. The collection-config API
+# changed. Phase 3 must use the 1.x form, not metadata={"hnsw:space": ...}.
+chromadb>=1.5.9
+
+# --- generation (phase 5) ---
+groq>=1.7.0
+
+# --- config / secrets (phase 1) ---
+python-dotenv>=1.2.3
+
+# --- UI (phase 6) ---
+streamlit>=1.64.0
+
+# --- tests + eval (phases 4-5) ---
+pytest>=9.1.1

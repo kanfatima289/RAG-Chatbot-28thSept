@@ -1,0 +1,16 @@
+# Normalise line endings. Keeps the diff clean on Windows and prevents
+# CRLF issues in shell scripts (render.yaml) on the Linux Render container.
+* text=auto eol=lf
+
+*.py   text diff=python
+*.md   text
+*.txt  text
+*.csv  text
+*.json text
+*.yml  text
+*.yaml text
+
+# Binary-ish assets
+*.png  binary
+*.jpg  binary
+*.pdf  binary
