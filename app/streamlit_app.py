@@ -9,8 +9,6 @@ Serves the phase-5 pipeline behind a small chat interface:
   - the exact disclaimer string (config.DISCLAIMER, deliverable 5),
   - one approved source link per answer (S4) with a fallback educational
     link on refusals,
-  - a "Show retrieved chunks" expander per answer - the US-4 / S18 affordance
-    that makes grounding visible to a reviewer,
   - conversation memory: the last `config.MEMORY_MESSAGES` turns are passed to
     the pipeline, and a follow-up like "what about its fees?" is rewritten
     into a standalone question before retrieval, with a "resolved follow-up"
@@ -157,12 +155,7 @@ _THEME_CSS = """<style>
 }
 [data-testid="stChatInput"] textarea{ font-size:.95rem; }
 
-/* --- expander + bordered chunk cards --- */
-[data-testid="stExpander"]{
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:rgba(255,255,255,.02);
-}
+/* --- bordered chunk cards / panels --- */
 [data-testid="stVerticalBlockBorderWrapper"]{
   border-color:var(--line);
   border-radius:12px;
@@ -280,20 +273,6 @@ def answer_question(question: str, history=None):
     }
 
 
-def render_chunks(chunks, narrowed_by: str) -> None:
-    if not chunks:
-        st.caption("No retrieval ran - the question was refused before search.")
-        return
-    where = f"narrowed by `{narrowed_by}`" if narrowed_by else "whole corpus"
-    st.caption(f"Top {len(chunks)} chunks ({where}) - the text the answer is grounded on:")
-    for i, c in enumerate(chunks, 1):
-        with st.container(border=True):
-            st.markdown(f"**#{i} · {c.scheme}** — *{c.section}*")
-            st.caption(f"chunk {c.chunk_index} · dense {c.dense_score:.4f} · lex {c.lexical_score:.3f}")
-            st.write(" ".join(c.text.split())[:220])
-            st.markdown(f"[{c.url}]({c.url})")
-
-
 def main() -> None:
     st.set_page_config(page_title="HDFC Mutual Fund Facts", page_icon="📊")
     _inject_theme()  # navy/slate styling; must follow set_page_config
@@ -361,9 +340,6 @@ def main() -> None:
                 st.markdown(
                     f"**Source:** [{msg['link'].title}]({msg['link'].url})"
                 )
-            if status not in {"no_key", "generation_error"}:
-                with st.expander("Show retrieved chunks"):
-                    render_chunks(msg.get("chunks") or [], msg.get("narrowed_by", ""))
 
 
 if __name__ == "__main__":

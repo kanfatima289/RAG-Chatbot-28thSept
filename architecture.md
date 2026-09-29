@@ -189,7 +189,8 @@ answer(question):
 
 - Welcome line, 3 example questions (clickable, from PRD §5.1 rows 1/2/4), the disclaimer note **"Facts-only. No investment advice."**, one chat box.
 - Renders answer + one visible source link.
-- Optional "Show retrieved chunks" expander — the US-4 / S18 demo affordance.
+- The "Show retrieved chunks" expander (US-4) was removed from the demo UI on
+  2026-09-29; `app/cli.py` still renders chunks via `format_chunks`.
 - Never writes the question body to disk (R9).
 - Satisfies: §3.6, S19.
 

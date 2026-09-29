@@ -20,8 +20,10 @@ strings the UI shows.
 - Answers are capped at **≤ 3 sentences** and every number in them must appear
   in the retrieved text; a made-up or absent fact comes back as
   "I don't have that information in my source pages" instead of a guess.
-- The UI shows **"Show retrieved chunks"** under each answer — the reviewer
-  affordance (US-4 / S18) — so grounding is visible, not claimed.
+- Grounding is still enforced in code — every number in an answer must appear in
+  the retrieved text — but the per-answer **"Show retrieved chunks"** expander
+  was removed from the demo UI, so a reviewer sees the answer and its source
+  link rather than the raw chunks. Use `python -m app.cli` to inspect chunks.
 - **Conversation memory**: the chat keeps the last `MEMORY_MESSAGES` (10)
   turns and, before retrieval, rewrites a follow-up that lacks a subject —
   "what about its fees?" becomes "What is the expense ratio of HDFC Flexi Cap

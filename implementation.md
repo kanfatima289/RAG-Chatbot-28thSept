@@ -298,7 +298,10 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 ### What this phase does
 
 - Renders the welcome line, the 3 clickable example questions (from PRD §5.1 rows 1, 2, 4 — fee, load, lock-in), the disclaimer **"Facts-only. No investment advice."**, one question box, the answer, and exactly one visible source link.
-- Adds a "Show retrieved chunks" expander — this is the US-4 / S18 affordance that lets a reviewer see grounding, and it is the most convincing thing in a live demo.
+- The per-answer "Show retrieved chunks" expander (US-4) was **removed from the
+  demo UI** on 2026-09-29 by request; the demo shows the answer and its one
+  source link. Grounding is unchanged in the pipeline, and `app/cli.py` still
+  prints the chunks for inspection.
 - Never writes the question body to disk (R9).
 - Deploys to Streamlit Cloud: `streamlit run app/streamlit_app.py` with no custom
   start command, `GROQ_API_KEY` as a dashboard secret (top-level key -> env var),
@@ -326,7 +329,7 @@ declared done: (1) a headless `streamlit run` with a `/_stcore/health` 200
 probe; (2) three committed `streamlit.testing.v1.AppTest` tests in
 `tests/test_streamlit_app.py` - boot + disclaimer + PRD-fixed example buttons,
 an example click producing a Q&A pair with exactly one approved source link and
-a "Show retrieved chunks" expander, and the C13 no-key banner; (3) live probes
+a "Show retrieved chunks" expander (since removed), and the C13 no-key banner; (3) live probes
 against the empty-store and real-key states.
 
 **Gate checks performed:**

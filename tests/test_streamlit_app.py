@@ -5,7 +5,7 @@ eval/evaluate.py). Here `pipeline.answer` is a deterministic fake so the chat
 layer under test is key-free and network-free (no Groq calls, no embeddings
 load): the UI must boot, render the PRD-fixed example buttons and disclaimer,
 turn a click into a question/answer pair with exactly one approved source link
-and a "Show retrieved chunks" expander, and survive a missing Groq key with a
+and no retrieved-chunks expander, and survive a missing Groq key with a
 friendly banner (C13) instead of a traceback.
 """
 
@@ -73,7 +73,7 @@ def test_ui_boots_with_disclaimer_examples_and_input(app) -> None:
     assert any("Facts-only. No investment advice." in m.value for m in app.markdown)
 
 
-def test_clicking_an_example_renders_question_answer_source_and_chunks(app) -> None:
+def test_clicking_an_example_renders_question_answer_and_source(app) -> None:
     app.button(key="ex_ELSS lock-in").click().run()
     assert not app.exception, [e.message for e in app.exception]
 
@@ -87,12 +87,9 @@ def test_clicking_an_example_renders_question_answer_source_and_chunks(app) -> N
     assert "**Source:**" in text  # the approved link, not a model-written URL
     assert "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth" in text
 
-    assert len(assistant.expander) == 1
-    ex = assistant.expander[0]
-    assert ex.label == "Show retrieved chunks"
-    assert any(
-        "narrowed by `scheme:flexi_cap`" in c.value for c in ex.caption
-    )
+    # The "Show retrieved chunks" expander was removed from the demo UI, so an
+    # answer must render no expander at all (US-4 dropped by request).
+    assert not assistant.expander
 
 
 def test_no_groq_key_shows_friendly_banner(monkeypatch) -> None:
