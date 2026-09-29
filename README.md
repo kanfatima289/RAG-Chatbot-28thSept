@@ -67,6 +67,35 @@ The UI opens at `http://localhost:8501`.
 .\.venv\Scripts\python.exe -m pytest -q            # full test suite
 ```
 
+## Deploy on Streamlit Cloud
+
+The app is a plain Streamlit app, so it deploys on Streamlit Community Cloud
+free tier in a few minutes (no Dockerfile, no start command — the repo is
+pushed to GitHub and the platform runs `streamlit run app/streamlit_app.py`).
+
+1. Push this repo to GitHub (done for the demo: `RAG-Chatbot-28thSept`).
+2. Go to https://streamlit.io/cloud, sign in with GitHub, and **Create app →
+   from existing repo**. Pick the repo and set the **main file path** to
+   `app/streamlit_app.py`. Pick Python 3.11+ in advanced settings (onnxruntime
+   needs ≥3.11).
+3. In the app's **Settings → Secrets**, add:
+   ```toml
+   GROQ_API_KEY = "gsk_..."        # top-level keys become env vars (config reads it directly)
+   RAG_CLOUD_AUTO_INGEST = "1"     # rebuild the index on a cold start
+   ```
+   `data/chroma/` is gitignored and the cloud disk is ephemeral, so without
+   `RAG_CLOUD_AUTO_INGEST=1` a cold start would show the "vector store is
+   empty" banner. With it, the app re-ingests from the committed `data/clean/`
+   (offline, no fetch) the first time a run finds an empty store — a one-time
+   per-container step that embeds 54 chunks locally.
+4. Deploy, then open `https://<app-name>.streamlit.app`. The first request
+   after a cold start pays the MiniLM ONNX download (~90 MB) plus the ingest,
+   then answers normally.
+
+`render.yaml` is kept in the repo as the documented alternate deploy contract
+(PRD C14) — it does the same cold-start rebuild via an explicit start command
+if you ever prefer Render; the two are interchangeable for this app.
+
 ## Measured behaviour (phase 5, frozen eval)
 
 | Success criterion | Result |
@@ -103,9 +132,10 @@ The UI opens at `http://localhost:8501`.
   fund-list chunk, so the unpinned question rightly refuses instead of
   guessing a scheme.
 - **S16 (persisted index) is a local-run guarantee.** Locally, restarts reuse
-  `data/chroma/` with no re-ingestion. On Render's free tier the disk is
-  ephemeral, so a cold start rebuilds the index from `data/clean/` via the
-  `--offline` ingest step baked into the start command.
+  `data/chroma/` with no re-ingestion. On Streamlit Community Cloud (and on
+  Render's free tier) the disk is ephemeral, so a cold start rebuilds the
+  index from `data/clean/` — the app does it automatically when
+  `RAG_CLOUD_AUTO_INGEST=1` (see "Deploy on Streamlit Cloud" below).
 
 ## Repository map
 

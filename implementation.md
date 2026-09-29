@@ -290,7 +290,7 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 |---|---|
 | `app/streamlit_app.py` | Welcome line, 3 example questions, disclaimer, chat box |
 | `DISCLAIMER.md` | Exact disclaimer string used in the UI (deliverable 5) |
-| `render.yaml` | Render build/start contract (C14) |
+| `render.yaml` | Render deploy contract (C14), retained as the alternate; Streamlit Cloud is the chosen target |
 | `README.md` | Setup, scope, known limits (deliverable 3) |
 | `sample_qa.md` | 5–10 Q&A with answers + links (deliverable 4) |
 | `.env.example` (final) | Confirms the key name without the value |
@@ -300,7 +300,10 @@ This phase needs no LLM, no index, and no network — which is exactly why it is
 - Renders the welcome line, the 3 clickable example questions (from PRD §5.1 rows 1, 2, 4 — fee, load, lock-in), the disclaimer **"Facts-only. No investment advice."**, one question box, the answer, and exactly one visible source link.
 - Adds a "Show retrieved chunks" expander — this is the US-4 / S18 affordance that lets a reviewer see grounding, and it is the most convincing thing in a live demo.
 - Never writes the question body to disk (R9).
-- Deploys to Render: bake the MiniLM model into the image, start with `RAG_OFFLINE=1`, and set `GROQ_API_KEY` as a dashboard secret.
+- Deploys to Streamlit Cloud: `streamlit run app/streamlit_app.py` with no custom
+  start command, `GROQ_API_KEY` as a dashboard secret (top-level key -> env var),
+  and `RAG_CLOUD_AUTO_INGEST=1` so a cold start re-ingests from `data/clean/`.
+  `render.yaml` is retained as the documented alternate (Render) contract.
 
 **The 3 example questions are fixed by the PRD** — do not improvise them. They must be expense ratio, exit load, and ELSS lock-in.
 
@@ -344,10 +347,12 @@ here):**
   answers are not advice, and that S16 (persisted index) is a local-run
   guarantee only.
 - Gate 8: `git log --all -- .env` returns nothing (verified post-commit).
-- Gate 6 (deployed Render link) needs the demo owner's Render account; the
-  contract is in `render.yaml` (build warms the MiniLM Hub cache, start runs
-  `ingest.run_ingestion --offline` then Streamlit with `HF_HUB_OFFLINE=1`, and
-  `GROQ_API_KEY` is a dashboard secret).
+- Gate 6 (deployed Streamlit Cloud link) needs the demo owner's streamlit.io
+  account; the app is `app/streamlit_app.py` (set as the main file path), the
+  secret is `GROQ_API_KEY` in the dashboard (top-level key -> env var), and
+  `RAG_CLOUD_AUTO_INGEST=1` makes a cold start rebuild the gitignored index
+  from `data/clean/` (verified by the three auto-ingest AppTests added in this
+  phase). `render.yaml` is retained as the alternate Render contract.
 
 **Two cosmetic robustness fixes landed during phase-6 verification.** Live
 answers were arriving as `0.77% .` / `₹100.  .` - the citation-marker strip

@@ -352,6 +352,19 @@ GROUNDING_ENABLED = os.getenv("GROUNDING_ENABLED", "1").strip().lower() in {
 # because a free container has an ephemeral filesystem.
 RAG_OFFLINE = os.getenv("RAG_OFFLINE", "0").strip().lower() in {"1", "true", "yes"}
 
+# 1 = if the store is found empty at app start, rebuild the index in-process
+#     from data/clean/ (offline). Streamlit Community Cloud runs `streamlit
+#     run` directly - no render.yaml-style start command - and data/chroma/ is
+#     gitignored, so a cold start there finds an empty store. The app then
+#     re-ingests itself, once per session, and falls back to the empty-store
+#     banner (phase-6 gate 2) on any failure. Local runs keep this 0: the
+#     documented ingest command builds the index and the banner stays honest.
+RAG_CLOUD_AUTO_INGEST = os.getenv("RAG_CLOUD_AUTO_INGEST", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
+
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 USER_AGENT = (

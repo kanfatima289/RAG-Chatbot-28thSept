@@ -18,7 +18,11 @@ Serves the phase-5 pipeline behind a small chat interface:
   - a "Clear chat" sidebar button that resets the in-memory history (nothing
     was ever written to disk, R9),
   - a friendly banner instead of a crash when GROQ_API_KEY is missing (C13)
-    or when data/chroma/ is empty (the exact ingest command is printed).
+    or when data/chroma/ is empty (the exact ingest command is printed),
+  - on Streamlit Community Cloud (no custom start command, and data/chroma/
+    is gitignored) a first boot that finds an empty store re-ingests itself
+    from data/clean/ once per session when RAG_CLOUD_AUTO_INGEST=1, then
+    falls back to the empty-store banner if that fails.
 
 The question body is never written to disk (R9); nothing here logs it.
 """
@@ -58,6 +62,36 @@ def corpus_count() -> int:
     except Exception as exc:  # noqa: BLE001 - surface *any* store failure nicely
         st.session_state["store_error"] = str(exc)[:300]
         return -1
+
+
+def ensure_index() -> int:
+    """Corpus count, building the index first on hosts with no start command.
+
+    Streamlit Community Cloud runs `streamlit run` directly - there is no
+    render.yaml-style build/start step, and data/chroma/ is gitignored - so a
+    cold start there finds an empty store. When RAG_CLOUD_AUTO_INGEST=1 the
+    app re-ingests in-process from the committed data/clean/ (the exact
+    offline command phase-6 gate 2 documents), once per session, then counts
+    again. Every failure falls through to the existing empty-store banner
+    (fail-open, like the rest of the app).
+    """
+    n = corpus_count()
+    if (
+        n > 0
+        or not config.RAG_CLOUD_AUTO_INGEST
+        or st.session_state.get("store_error")
+        or st.session_state.get("auto_ingest_attempted")
+    ):
+        return n
+    st.session_state["auto_ingest_attempted"] = True
+    try:
+        with st.spinner("Building the search index on first run (offline)…"):
+            from ingest import run_ingestion
+
+            run_ingestion.main(["--offline"])
+    except Exception as exc:  # noqa: BLE001 - surface via the store-error banner
+        st.session_state["store_error"] = str(exc)[:300]
+    return corpus_count()
 
 
 def _memory_window(history: list[dict]) -> list[dict]:
@@ -133,7 +167,7 @@ def main() -> None:
         st.header("HDFC Mutual Fund Facts")
         st.caption("A RAG assistant over 5 fixed groww.in pages: the AMC overview + 4 schemes.")
         st.write(f"**{config.DISCLAIMER}**")
-        n = corpus_count()
+        n = ensure_index()  # may build the index first (Streamlit Cloud path)
         model_line = f"{config.GROQ_MODEL} — key {'set' if config.has_groq_key() else 'NOT set'}"
         st.caption(f"corpus: {n} chunks · model: {model_line}")
         if not config.has_groq_key():

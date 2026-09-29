@@ -160,3 +160,94 @@ def test_clear_chat_button_resets_history(app) -> None:
     app.button(key="clear_chat").click().run()
     assert not app.exception, [e.message for e in app.exception]
     assert len(app.chat_message) == 0, "the whole conversation must vanish"
+
+
+# ---------------------------------------------------------------------------
+# Streamlit Cloud auto-ingest (RAG_CLOUD_AUTO_INGEST=1). Community Cloud runs
+# `streamlit run` with no custom start command and data/chroma/ is gitignored,
+# so the app re-ingests itself from data/clean/ the first time a run finds an
+# empty store. These tests fake the store count and the ingest entrypoint, so
+# no network or model download happens.
+# ---------------------------------------------------------------------------
+class _FakeCollection:
+    """Stands in for chromadb's collection; only count() is used here."""
+
+    def __init__(self, count: int) -> None:
+        self._count = count
+
+    def count(self) -> int:
+        return self._count
+
+
+def _patch_store(monkeypatch, count: int):
+    """Point rag.store.get_collection at a fake with a fixed count."""
+    from rag import store as store_mod
+
+    monkeypatch.setattr(store_mod, "get_collection", lambda name=None: _FakeCollection(count))
+
+
+def test_cloud_auto_ingest_builds_an_empty_store(monkeypatch) -> None:
+    """Flag on + empty store -> the offline ingest runs exactly once."""
+    from ingest import run_ingestion
+    import config as config_mod
+
+    calls: list[list[str]] = []
+    fake = _FakeCollection(count=0)  # mutated by the fake ingest below
+
+    def _fake_main(argv: list[str] | None = None) -> int:
+        calls.append(argv or [])
+        fake._count = 54  # the offline ingest populated the store
+        return 0
+
+    from rag import store as store_mod
+
+    monkeypatch.setattr(store_mod, "get_collection", lambda name=None: fake)
+    monkeypatch.setattr(run_ingestion, "main", _fake_main)
+    monkeypatch.setattr(config_mod, "RAG_CLOUD_AUTO_INGEST", True)
+
+    at = AppTest.from_file(APP_PATH, default_timeout=60)
+    at.run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert calls == [["--offline"]], "auto-ingest must run the documented command"
+    # The empty-store banner must NOT appear once the index was built.
+    assert not any("vector store is empty" in w.value for w in at.warning)
+
+
+def test_cloud_auto_ingest_leaves_banner_when_flag_off(monkeypatch) -> None:
+    """Flag off + empty store -> the documented empty-store banner, no ingest."""
+    from ingest import run_ingestion
+    import config as config_mod
+
+    calls: list[list[str]] = []
+
+    def _fake_main(argv: list[str] | None = None) -> int:
+        calls.append(argv or [])
+        return 0
+
+    _patch_store(monkeypatch, count=0)
+    monkeypatch.setattr(run_ingestion, "main", _fake_main)
+    monkeypatch.setattr(config_mod, "RAG_CLOUD_AUTO_INGEST", False)
+
+    at = AppTest.from_file(APP_PATH, default_timeout=60)
+    at.run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert calls == [], "ingest must not run when the flag is off"
+    assert any("vector store is empty" in w.value for w in at.warning)
+
+
+def test_cloud_auto_ingest_failure_falls_back_to_banner(monkeypatch) -> None:
+    """A failed auto-ingest surfaces the store error, never a traceback."""
+    from ingest import run_ingestion
+    import config as config_mod
+
+    def _broken_main(argv: list[str] | None = None) -> int:
+        raise RuntimeError("simulated offline ingest failure")
+
+    _patch_store(monkeypatch, count=0)
+    monkeypatch.setattr(run_ingestion, "main", _broken_main)
+    monkeypatch.setattr(config_mod, "RAG_CLOUD_AUTO_INGEST", True)
+
+    at = AppTest.from_file(APP_PATH, default_timeout=60)
+    at.run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert any("simulated offline ingest failure" in e.value for e in at.error)
