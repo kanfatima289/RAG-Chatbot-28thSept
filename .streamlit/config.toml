@@ -1,0 +1,16 @@
+# Streamlit theme - dark navy / slate blue (UI redesign, 2026-09-29).
+#
+# Streamlit Community Cloud runs from the repo root, so it picks this file up
+# automatically. A user who picks a theme in their own account settings
+# overrides it; the app is designed to stay legible either way.
+#
+# Font family, canvas gradient, bubble/button surfaces and spacing live in
+# app/streamlit_app.py (_THEME_CSS) - theming keys cannot express those.
+
+[theme]
+base = "dark"
+primaryColor = "#4C8DFF"        # bright blue accent (focus rings, primary buttons)
+backgroundColor = "#0A1020"     # page background - deep navy
+secondaryBackgroundColor = "#121C33"  # sidebar, inputs, expander headers - slate navy
+textColor = "#E6EDF7"           # near-white with a blue tint
+font = "sans-serif"

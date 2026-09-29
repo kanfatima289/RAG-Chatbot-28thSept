@@ -54,6 +54,20 @@ EXAMPLES = {
     "ELSS lock-in": "What is the lock-in period for HDFC ELSS Tax Saver?",
 }
 
+# --- page copy (UI redesign, 2026-09-29) ------------------------------------
+# The main-area hero, above the example buttons. The sidebar keeps its own
+# short "HDFC Mutual Fund Facts" header; the long title belongs in the wide
+# column, where it has room to sit on one or two comfortable lines.
+TITLE = (
+    "Ask me facts about HDFC Flexi Cap, Large Cap, Mid Cap and "
+    "ELSS Tax Saver Mutual Funds"
+)
+SUBHEADER = (
+    "Ask me about expense ratio, exit load, minimum SIP, lock-in, "
+    "riskometer or benchmark. No investment advice. Please don't share "
+    "PAN, Aadhar, phone, email, OTP, or account numbers"
+)
+
 _STATUS_TONE = {
     "answered": "assistant",
     "not_in_corpus": "assistant",
@@ -62,6 +76,113 @@ _STATUS_TONE = {
     "refused_performance": "assistant",
     "refused_pii": "assistant",
 }
+
+# Presentation only. The palette and font live in .streamlit/config.toml
+# (Streamlit's own theme keys); this styles what theming cannot express - the
+# gradient canvas, the chat/button surfaces and the spacing. No behaviour
+# depends on it, and a selector that misses on a future Streamlit version
+# degrades to plain dark-mode rather than breaking the app.
+_THEME_CSS = """<style>
+:root{
+  --navy-900:#0A1020; --navy-700:#121C33; --navy-600:#1A2740;
+  --line:#1E2D4A; --ink:#E6EDF7; --muted:#9FB0CA;
+  --accent:#4C8DFF; --accent-soft:rgba(76,141,255,.14);
+}
+
+/* --- canvas + typography --- */
+.stApp{
+  background:
+    radial-gradient(1200px 540px at 10% -10%, rgba(76,141,255,.14), transparent 62%),
+    linear-gradient(180deg,#0E1729 0%,#0A1020 55%,#070C18 100%);
+  font-family:"Inter","Segoe UI",-apple-system,BlinkMacSystemFont,
+              "Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);
+}
+.stApp h1,.stApp h2,.stApp h3,.stApp h4{
+  color:#F4F8FF; font-weight:650; letter-spacing:-.015em; line-height:1.22;
+}
+.stApp p,.stApp li,.stApp label,.stApp span{ color:var(--ink); }
+.stApp a{ color:#6BA4FF; }
+.stApp [data-testid="stCaptionContainer"] p,
+.stApp .stCaption{ color:var(--muted) !important; }
+.stApp hr{ border-color:var(--line); }
+
+.block-container{ max-width:1080px; padding-top:2.2rem; padding-bottom:4.5rem; }
+
+/* --- sidebar --- */
+[data-testid="stSidebar"]{
+  background:linear-gradient(180deg,#111B2F 0%,#0B1322 100%);
+  border-right:1px solid var(--line);
+}
+/* the title is long; keep it from shouting over the chat */
+[data-testid="stSidebar"] h2{ font-size:1.02rem; line-height:1.34; }
+
+/* --- chat bubbles --- */
+[data-testid="stChatMessage"]{ background:transparent; padding:.3rem .1rem; }
+[data-testid="stChatMessageContent"]{
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:.85rem 1.05rem;
+}
+[data-testid="stChatMessageAvatar"]{
+  background:var(--accent-soft);
+  border:1px solid rgba(76,141,255,.35);
+}
+
+/* --- buttons --- */
+.stButton > button,.stLinkButton > a{
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,#16223A,#111B2E);
+  color:var(--ink);
+  font-weight:550;
+  transition:border-color .15s ease, background .15s ease, color .15s ease;
+}
+.stButton > button:hover,.stLinkButton > a:hover{
+  border-color:var(--accent);
+  background:linear-gradient(180deg,#1B2A47,#15213A);
+  color:#FFFFFF;
+}
+.stButton > button:focus-visible,.stLinkButton > a:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+
+/* --- chat input --- */
+[data-testid="stChatInput"]{
+  background-color:rgba(18,28,51,.72);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:.3rem .5rem;
+}
+[data-testid="stChatInput"] textarea{ font-size:.95rem; }
+
+/* --- expander + bordered chunk cards --- */
+[data-testid="stExpander"]{
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.02);
+}
+[data-testid="stVerticalBlockBorderWrapper"]{
+  border-color:var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.02);
+}
+
+/* --- scrollbars --- */
+.stApp ::-webkit-scrollbar,[data-testid="stSidebar"] ::-webkit-scrollbar{
+  width:8px; height:8px;
+}
+.stApp ::-webkit-scrollbar-thumb,
+[data-testid="stSidebar"] ::-webkit-scrollbar-thumb{
+  background:#24344F; border-radius:8px;
+}
+</style>"""
+
+
+def _inject_theme() -> None:
+    """Apply the navy/slate styling. Call after set_page_config."""
+    st.markdown(_THEME_CSS, unsafe_allow_html=True)
 
 
 def corpus_count() -> int:
@@ -175,14 +296,15 @@ def render_chunks(chunks, narrowed_by: str) -> None:
 
 def main() -> None:
     st.set_page_config(page_title="HDFC Mutual Fund Facts", page_icon="📊")
+    _inject_theme()  # navy/slate styling; must follow set_page_config
 
     with st.sidebar:
         st.header("HDFC Mutual Fund Facts")
         st.caption("A RAG assistant over 5 fixed groww.in pages: the AMC overview + 4 schemes.")
         st.write(f"**{config.DISCLAIMER}**")
         n = ensure_index()  # may build the index first (Streamlit Cloud path)
-        model_line = f"{config.GROQ_MODEL} — key {'set' if config.has_groq_key() else 'NOT set'}"
-        st.caption(f"corpus: {n} chunks · model: {model_line}")
+        # The "corpus: N chunks · model: <id>" caption was removed in the UI
+        # redesign; `n` is still what the empty-store gate below checks.
         if not config.has_groq_key():
             st.warning("Add `GROQ_API_KEY` to `.env` and restart to generate answers. Retrieval works without it.")
         st.link_button("Approved sources (sources.md)", "https://groww.in/mutual-funds")
@@ -205,8 +327,8 @@ def main() -> None:
         )
         st.stop()
 
-    st.markdown("### Ask a factual question about the 4 HDFC funds")
-    st.caption("Try one of the PRD example questions:")
+    st.markdown(f"# {TITLE}")
+    st.caption(SUBHEADER)
 
     pending = None
     cols = st.columns(3)
