@@ -4,8 +4,9 @@
 # checked-in data/clean/ (ephemeral disk on free tier, see README "S16 is
 # local-only") and then serve Streamlit on the port Render provides.
 #
-# GROQ_API_KEY is NOT in this file - set it in the Render dashboard as a
-# secret (PRD C9: the key lives in env only, never in the repo).
+# GROQ_API_KEY is declared below with sync:false - Render treats it as a
+# dashboard secret (PRD C9: the key's VALUE lives in env only, never in the
+# repo). The Blueprint flow will prompt for its value once at creation.
 #
 # The build step warms the HF Hub cache for all-MiniLM-L6-v2's two files so
 # the start command runs with HF_HUB_OFFLINE=1 - the model is baked into the
@@ -28,4 +29,7 @@ services:
         value: 3.11.9
       - key: EMBED_THREADS
         value: "2"
+      # Secret, set at Blueprint creation / in the service Environment tab.
+      - key: GROQ_API_KEY
+        sync: false
     healthCheckPath: /_stcore/health
