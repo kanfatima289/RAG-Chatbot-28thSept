@@ -72,6 +72,8 @@ The UI opens at `http://localhost:8501`.
 The app is a plain Streamlit app, so it deploys on Streamlit Community Cloud
 free tier in a few minutes (no Dockerfile, no start command — the repo is
 pushed to GitHub and the platform runs `streamlit run app/streamlit_app.py`).
+The demo is live at **https://rag-chatbot-groww.streamlit.app/** (verified
+2026-09-29).
 
 1. Push this repo to GitHub (done for the demo: `RAG-Chatbot-28thSept`).
 2. Go to https://streamlit.io/cloud, sign in with GitHub, and **Create app →

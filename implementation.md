@@ -329,8 +329,7 @@ an example click producing a Q&A pair with exactly one approved source link and
 a "Show retrieved chunks" expander, and the C13 no-key banner; (3) live probes
 against the empty-store and real-key states.
 
-**Gate checks performed locally (gate 6 is the only one that cannot run
-here):**
+**Gate checks performed:**
 
 - Gate 2: an empty `CHROMA_PATH` renders the warning banner with the exact
   ingest command (`python -m ingest.run_ingestion --offline`) and stops cleanly
@@ -347,12 +346,20 @@ here):**
   answers are not advice, and that S16 (persisted index) is a local-run
   guarantee only.
 - Gate 8: `git log --all -- .env` returns nothing (verified post-commit).
-- Gate 6 (deployed Streamlit Cloud link) needs the demo owner's streamlit.io
-  account; the app is `app/streamlit_app.py` (set as the main file path), the
-  secret is `GROQ_API_KEY` in the dashboard (top-level key -> env var), and
-  `RAG_CLOUD_AUTO_INGEST=1` makes a cold start rebuild the gitignored index
-  from `data/clean/` (verified by the three auto-ingest AppTests added in this
-  phase). `render.yaml` is retained as the alternate Render contract.
+- Gate 6 (deployed Streamlit Cloud link) — **verified live 2026-09-29 at
+  https://rag-chatbot-groww.streamlit.app/** by the demo owner in a browser:
+  the app boots with no local setup (welcome, disclaimer, the 3 PRD-fixed
+  example buttons) and answers the "Expense ratio" example with one groww.in
+  source link and no traceback. Deployment contract: main file
+  `app/streamlit_app.py`, Python 3.11+, dashboard secrets `GROQ_API_KEY` and
+  `RAG_CLOUD_AUTO_INGEST=1` (top-level TOML keys -> env vars); a cold start
+  rebuilds the gitignored index from `data/clean/` (verified by the three
+  auto-ingest AppTests added in this phase). `render.yaml` is retained as the
+  alternate Render contract. One cloud-only fix was needed during
+  verification: Streamlit Cloud puts only `app/` on `sys.path`, so
+  `app/streamlit_app.py` now prepends the repo root to `sys.path` (computed
+  from `__file__`) before importing `config` — reproduces in a unit test,
+  remote runs healthy since `ebb4548`.
 
 **Two cosmetic robustness fixes landed during phase-6 verification.** Live
 answers were arriving as `0.77% .` / `₹100.  .` - the citation-marker strip
