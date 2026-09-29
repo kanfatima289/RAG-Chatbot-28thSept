@@ -107,6 +107,28 @@ _THEME_CSS = """<style>
 
 .block-container{ max-width:1080px; padding-top:2.2rem; padding-bottom:4.5rem; }
 
+/* --- centred hero (title + subheader) --- */
+.app-hero{
+  text-align:center;
+  margin:0 auto 1.6rem;
+  padding:0 1rem;
+}
+.app-hero h1{
+  margin:0 0 .55rem;
+  font-size:2.05rem;      /* long title: sized to wrap to ~2 lines, not 4 */
+  line-height:1.24;
+  font-weight:650;
+  letter-spacing:-.015em;
+  color:#F4F8FF;
+}
+.app-hero .app-hero-sub{
+  margin:0 auto;
+  max-width:58ch;         /* keeps the subheader on a comfortable measure */
+  font-size:1.02rem;
+  line-height:1.6;
+  color:var(--muted);
+}
+
 /* --- sidebar --- */
 [data-testid="stSidebar"]{
   background:linear-gradient(180deg,#111B2F 0%,#0B1322 100%);
@@ -306,8 +328,16 @@ def main() -> None:
         )
         st.stop()
 
-    st.markdown(f"# {TITLE}")
-    st.caption(SUBHEADER)
+    # Title + subheader are one centred hero. Rendered as a single HTML block
+    # (rather than st.markdown + st.caption) so one .app-hero class controls
+    # the alignment of both lines; Streamlit's own heading/caption elements
+    # would each need their own selector. unsafe_allow_html is safe here
+    # because both strings are fixed literals with no HTML metacharacters.
+    st.markdown(
+        f'<div class="app-hero"><h1>{TITLE}</h1>'
+        f'<p class="app-hero-sub">{SUBHEADER}</p></div>',
+        unsafe_allow_html=True,
+    )
 
     pending = None
     cols = st.columns(3)
