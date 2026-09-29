@@ -29,6 +29,19 @@ The question body is never written to disk (R9); nothing here logs it.
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+# Deploy portability (Streamlit Cloud): `streamlit run` prepends the script's
+# own directory (app/) to sys.path, but NOT the repo root, which is where
+# config.py and the rag/ and ingest/ packages live. Local runs masked this
+# because `python -m streamlit run` adds the CWD (the README's launch command);
+# the platform launcher does not. Add the root explicitly or the very first
+# import here fails with "No module named 'config'".
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import streamlit as st
 
 import config
