@@ -57,7 +57,7 @@ EXAMPLES = {
 # short "HDFC Mutual Fund Facts" header; the long title belongs in the wide
 # column, where it has room to sit on one or two comfortable lines.
 TITLE = (
-    "Ask me facts about HDFC Flexi Cap, Large Cap, Mid Cap and "
+    "Fact-based Chatbot for HDFC Flexi Cap, Large Cap, Mid Cap and "
     "ELSS Tax Saver Mutual Funds"
 )
 SUBHEADER = (
